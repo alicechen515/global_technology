@@ -7,11 +7,12 @@
 #    http://shiny.rstudio.com/
 #
 
+#Setuo
 library(shiny)
 library(tidyverse)
 library(tidycensus)
 
-
+census_api_key("e11f1e75d3ebc74c7015605fee94373295f5ccb2", overwrite = TRUE, install = TRUE)
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
