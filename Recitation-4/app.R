@@ -48,7 +48,11 @@ ui <- navbarPage(
              p("Hello, this is where I talk about my project."),
              h3("About Me"),
              p("My name is Alice Chen and I study Economics. 
-             You can reach me at alicechen@college.harvard.edu.")))
+             You can reach me at alicechen@college.harvard.edu."),
+             h4("My Repo"),
+             p("https://github.com/alicechen2002/-gov1005-recitation-week-4-"),
+             h5("My Data"),
+             p("I will use GapMinder for immunization information and World Bank data for a country's income and development index.")))
 
 # Define server logic required 
 server <- function(input, output) {
