@@ -12,7 +12,7 @@ library(shiny)
 library(tidyverse)
 library(tidycensus)
 
-census_api_key("e11f1e75d3ebc74c7015605fee94373295f5ccb2", overwrite = TRUE, install = TRUE)
+census_api_key("bb2250b0fd264a0c25486d53d100c9907eec9d62", overwrite = TRUE, install = TRUE)
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
