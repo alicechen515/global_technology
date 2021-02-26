@@ -7,7 +7,7 @@
 #    http://shiny.rstudio.com/
 #
 
-#Setuo
+#setup
 library(shiny)
 library(tidyverse)
 library(tidycensus)
