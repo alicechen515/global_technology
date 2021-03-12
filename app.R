@@ -10,11 +10,11 @@
 #setup
 library(shiny)
 library(tidyverse)
-library(shinythemes)
+library(tidycensus)
 source(file = "maps.R")
 
 
-#census_api_key("bb2250b0fd264a0c25486d53d100c9907eec9d62", overwrite = TRUE, install = TRUE)
+census_api_key("bb2250b0fd264a0c25486d53d100c9907eec9d62", overwrite = TRUE, install = TRUE)
 #
 # This is a Shiny web application. You can run the application by clicking
 # the 'Run App' button above.
@@ -28,7 +28,7 @@ source(file = "maps.R")
 # Define UI for application
 ui <- navbarPage(
     "Final Project Title",
-    tabPanel("My Plot",
+    tabPanel("Model",
              fluidPage(
                  titlePanel("Model Title"),
                  sidebarLayout(
@@ -59,38 +59,40 @@ ui <- navbarPage(
 # Define server logic required 
 server <- function(input, output) {
     
-    # if(input == "a"){
-    # racevars <- c(White = "B02001_002", 
-    #               Black = "B02001_003", 
-    #               Asian = "B02001_005",
-    #               Hispanic = "B03003_003")
-    # harris <- get_acs(geography = "tract",
-    #                   variables = racevars, 
-    #                   year = 2018,
-    #                   state = "TX",
-    #                   county = "Harris County",
-    #                   geometry = TRUE,
-    #                   summary_var = "B02001_001") 
-    # output$map <- renderPlot({harris %>%
-    #         mutate(Percent = 100 * (estimate / summary_est)) %>%
-    #         ggplot(aes(fill = Percent, color = Percent)) +
-    #         facet_wrap(~ variable) +
-    #         geom_sf() +
-    #         scale_fill_viridis_c(direction = -1) +
-    #         scale_color_viridis_c(direction = -1) +
-    #         labs(title = "Racial geography of Harris County, Texas",
-    #              caption = "Source: American Community Survey 2014-2018") +
-    #         theme_void()
-    #      })
-    # 
-    # }
-    # else{
-
-        output$map <- renderPlot({child_mortality_tbl})
-    #     }
-    #     
-     }
-
+    if(input == "a"){
+    racevars <- c(White = "B02001_002", 
+                  Black = "B02001_003", 
+                  Asian = "B02001_005",
+                  Hispanic = "B03003_003")
+    harris <- get_acs(geography = "tract",
+                      variables = racevars, 
+                      year = 2018,
+                      state = "TX",
+                      county = "Harris County",
+                      geometry = TRUE,
+                      summary_var = "B02001_001") 
+    output$map <- renderPlot({harris %>%
+            mutate(Percent = 100 * (estimate / summary_est)) %>%
+            ggplot(aes(fill = Percent, color = Percent)) +
+            facet_wrap(~ variable) +
+            geom_sf() +
+            scale_fill_viridis_c(direction = -1) +
+            scale_color_viridis_c(direction = -1) +
+            labs(title = "Racial geography of Harris County, Texas",
+                 caption = "Source: American Community Survey 2014-2018") +
+            theme_void()
+         })
+    
+    }
+    else{
+        output$map <- {child_mortality_tbl %>%
+                ggplot(mapping = aes(x = country, 
+                                     y = `X2020`)) +
+                geom_point()
+            }
+        
+    }
+}
 
 
 # Run the application 

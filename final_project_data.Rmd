@@ -1,0 +1,58 @@
+---
+title: "final_project_data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(shiny)
+library(tidyverse)
+
+#census_api_key("bb2250b0fd264a0c25486d53d100c9907eec9d62", overwrite = TRUE, install = TRUE)
+
+```
+
+```{r}
+child_mortality <- read_csv("child_mortality_0_5_year_olds_dying_per_1000_born.csv",
+         col_types = cols(
+  country = col_character(),
+  `1995` = col_double(),
+  `1996` = col_double(),
+  `1997` = col_double(),
+  `1998` = col_double(),
+  `1999` = col_double(),
+  `2000` = col_double(),
+  `2001` = col_double(),
+  `2002` = col_double(),
+  `2003` = col_double(),
+  `2004` = col_double(),
+  `2005` = col_double(),
+  `2006` = col_double(),
+  `2007` = col_double(),
+  `2008` = col_double(),
+  `2009` = col_double(),
+  `2010` = col_double())) %>%
+  pivot_wider(names_from = )
+health_spending <- read_csv("total_health_spending_per_person_us.csv",
+                            col_type = cols(
+  country = col_character(),
+  `1995` = col_double(),
+  `1996` = col_double(),
+  `1997` = col_double(),
+  `1998` = col_double(),
+  `1999` = col_double(),
+  `2000` = col_double(),
+  `2001` = col_double(),
+  `2002` = col_double(),
+  `2003` = col_double(),
+  `2004` = col_double(),
+  `2005` = col_double(),
+  `2006` = col_double(),
+  `2007` = col_double(),
+  `2008` = col_double(),
+  `2009` = col_double(),
+  `2010` = col_double()
+))
+```
+
