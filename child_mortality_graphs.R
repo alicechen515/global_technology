@@ -5,7 +5,7 @@ library(shiny)
 
 
 
-child_mortality <- read_csv(file = "child_mortality_0_5_year_olds_dying_per_1000_born.csv",
+child_mortality <- read_csv(file = "raw_data/child_mortality_0_5_year_olds_dying_per_1000_born.csv",
                             col_types = cols(
                               .default = col_double(),
                               country = col_character()
@@ -32,6 +32,8 @@ mean_child_mortality <- as_tibble(child_mortality) %>%
   geom_point()
 
 mean_child_mortality
+
+read_csv(file = "raw_data/six_vacc_rate.csv")
 #ggsave("child_mortality.png", child_mortality_tbl)
 
 

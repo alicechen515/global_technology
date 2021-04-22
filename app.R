@@ -74,6 +74,9 @@ server <- function(input, output) {
         else if(input$plot_type2 =="b"){child_mortality_tbl}
     )
     
+    
+    #renderImage()
+    
     # output$map2 <- if(input$plot_type2 != "a")
     # {renderPlot({mean_child_mortality})}
     # else {renderPlot({child_mortality_tbl})}
