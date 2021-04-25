@@ -17,7 +17,8 @@
 library(shiny)
 library(tidyverse)
 library(shinythemes)
-source(file = "maps.R")
+source(file = "child_mortality_graphs.R")
+source(file = "TibbleCreation.Rmd")
 
 
 # Define UI for application

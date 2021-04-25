@@ -1,0 +1,324 @@
+---
+title: "TestGraphs"
+author: "Alice Chen"
+date: "24/04/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(tidycensus)
+library(shinythemes)
+library(shiny)
+library(plotly)
+library(gganimate)
+library(gifski)
+library(readr)
+library(janitor)
+```
+
+```{r, include = FALSE}
+cellphones_100 <- read_csv(file = "cell_phones_per_100_people.csv",
+                           col_types = cols(
+  country = col_character(),
+  `1960` = col_double(),
+  `1961` = col_logical(),
+  `1962` = col_logical(),
+  `1963` = col_logical(),
+  `1964` = col_logical(),
+  `1965` = col_double(),
+  `1966` = col_double(),
+  `1967` = col_double(),
+  `1968` = col_double(),
+  `1969` = col_double(),
+  `1970` = col_double(),
+  `1971` = col_double(),
+  `1972` = col_double(),
+  `1973` = col_double(),
+  `1974` = col_double(),
+  `1975` = col_double(),
+  `1976` = col_double(),
+  `1977` = col_double(),
+  `1978` = col_double(),
+  `1979` = col_double(),
+  `1980` = col_double(),
+  `1981` = col_double(),
+  `1982` = col_double(),
+  `1983` = col_double(),
+  `1984` = col_double(),
+  `1985` = col_double(),
+  `1986` = col_double(),
+  `1987` = col_double(),
+  `1988` = col_double(),
+  `1989` = col_double(),
+  `1990` = col_double(),
+  `1991` = col_double(),
+  `1992` = col_double(),
+  `1993` = col_double(),
+  `1994` = col_double(),
+  `1995` = col_double(),
+  `1996` = col_double(),
+  `1997` = col_double(),
+  `1998` = col_double(),
+  `1999` = col_double(),
+  `2000` = col_double(),
+  `2001` = col_double(),
+  `2002` = col_double(),
+  `2003` = col_double(),
+  `2004` = col_double(),
+  `2005` = col_double(),
+  `2006` = col_double(),
+  `2007` = col_double(),
+  `2008` = col_double(),
+  `2009` = col_double(),
+  `2010` = col_double(),
+  `2011` = col_double(),
+  `2012` = col_double(),
+  `2013` = col_double(),
+  `2014` = col_double(),
+  `2015` = col_double(),
+  `2016` = col_double(),
+  `2017` = col_double(),
+  `2018` = col_double(),
+  `2019` = col_double()
+)
+
+)
+
+cell100 <- as_tibble(cellphones_100) %>%
+  select(country, `2000`:`2019`)
+```
+
+```{r include = FALSE}
+
+# "An international dollar would buy in the cited country a comparable amount of goods and services a U.S. dollar would buy in the United States. This term is often used in conjunction with Purchasing Power Parity (PPP) data." (World Bank)
+
+GDPraw <- read_csv(file = "raw_data/GDP_PPP.csv",
+                   col_types = cols(
+  `Country Name` = col_character(),
+  `Country Code` = col_character(),
+  `Indicator Name` = col_character(),
+  `Indicator Code` = col_character(),
+  `1960` = col_logical(),
+  `1961` = col_logical(),
+  `1962` = col_logical(),
+  `1963` = col_logical(),
+  `1964` = col_logical(),
+  `1965` = col_logical(),
+  `1966` = col_logical(),
+  `1967` = col_logical(),
+  `1968` = col_logical(),
+  `1969` = col_logical(),
+  `1970` = col_logical(),
+  `1971` = col_logical(),
+  `1972` = col_logical(),
+  `1973` = col_logical(),
+  `1974` = col_logical(),
+  `1975` = col_logical(),
+  `1976` = col_logical(),
+  `1977` = col_logical(),
+  `1978` = col_logical(),
+  `1979` = col_logical(),
+  `1980` = col_logical(),
+  `1981` = col_logical(),
+  `1982` = col_logical(),
+  `1983` = col_logical(),
+  `1984` = col_logical(),
+  `1985` = col_logical(),
+  `1986` = col_logical(),
+  `1987` = col_logical(),
+  `1988` = col_logical(),
+  `1989` = col_logical(),
+  `1990` = col_double(),
+  `1991` = col_double(),
+  `1992` = col_double(),
+  `1993` = col_double(),
+  `1994` = col_double(),
+  `1995` = col_double(),
+  `1996` = col_double(),
+  `1997` = col_double(),
+  `1998` = col_double(),
+  `1999` = col_double(),
+  `2000` = col_double(),
+  `2001` = col_double(),
+  `2002` = col_double(),
+  `2003` = col_double(),
+  `2004` = col_double(),
+  `2005` = col_double(),
+  `2006` = col_double(),
+  `2007` = col_double(),
+  `2008` = col_double(),
+  `2009` = col_double(),
+  `2010` = col_double(),
+  `2011` = col_double(),
+  `2012` = col_double(),
+  `2013` = col_double(),
+  `2014` = col_double(),
+  `2015` = col_double(),
+  `2016` = col_double(),
+  `2017` = col_double(),
+  `2018` = col_double(),
+  `2019` = col_double(),
+  `2020` = col_logical(),
+  X66 = col_logical()
+))
+
+GDPraw <- as_tibble(GDPraw)
+```
+
+
+```{r, include = FALSE}
+clabel <- read_csv(file = "countries-continents.csv",
+         col_types = cols(
+  Continent = col_character(),
+  Country = col_character()
+))
+  
+continentlabel <- as_tibble(clabel) %>%
+  rename("country" = Country)
+
+
+# Filtered out Burkina as the World Bank data did not include Burkina
+newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
+  filter(country != "Burkina")
+```
+
+
+
+
+```{r}
+
+
+
+#% of people with Cellphone over 20 years
+cell20 <- newcell100 %>%
+  rowwise() %>%
+  mutate(tenyearavg = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  mutate(fiveyearavg = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+
+countrycellpercent <- cell20 %>%
+  filter(country == "China") %>%
+  select( `2000`:`2019`) %>%
+  pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
+  mutate(Year = as.numeric(Year)) %>%
+  ggplot(aes(x = Year, y = Percentage)) +
+  geom_point( alpha = 0.7) +
+  theme_linedraw() +
+  transition_time(Year) +
+    labs(title = "Years: {round(frame_time,0)}") +
+    shadow_wake(wake_length = 0.3, alpha = FALSE)
+    
+countrycellpercent
+
+makecountrycell <- function(c){
+  
+  outputplot <- cell20 %>%
+  filter(country == c) %>%
+  select( `2000`:`2019`) %>%
+  pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
+  mutate(Year = as.numeric(Year)) %>%
+  ggplot(aes(x = Year, y = Percentage)) +
+  geom_point(alpha = 0.7) +
+  theme_linedraw() +
+    
+  ggsave("images/outputplot.png")
+  print("images/outputplot.png")
+}
+
+makecountrycell(c = "China")
+```
+
+
+```{r, message = FALSE}
+
+
+celllong <- cell20 %>%
+  pivot_longer(names_to = "Year", values_to = "Percentage", cols = `2000`:`2019` ) %>%
+  mutate(Year = as.numeric(Year)) 
+
+allcountriescell <-  celllong %>%
+  ggplot(aes(x = Year, y = Percentage, fill = Continent, na.rm = TRUE )) +
+  facet_wrap(~Continent, nrow = 2) +
+  geom_point( alpha = 0.7)  +
+  transition_time(Year) +
+    labs(title = "Years: {round(frame_time,0)}") +
+    shadow_wake(wake_length = 0.3, alpha = FALSE)
+
+allcountriescell
+```
+
+```{r, message = FALSE}
+
+
+GDP <- GDPraw %>%
+  rename("country" = `Country Name`) %>%
+  select(country, `2000`:`2019`) %>%
+  rowwise() %>%
+  mutate(tenyearGDP = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  mutate(fiveyearGDP = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  filter(fiveyearGDP != "NaN") 
+
+
+
+```
+
+```{r}
+cell20
+
+celllong
+GDP
+
+GDPlonger <- GDP %>%
+  pivot_longer(names_to = "Year", values_to = "GDP", cols = `2000`:`2019`) %>%
+  mutate(Year = as.numeric(Year))
+
+GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year"))
+
+GDPandCell
+```
+
+
+```{r}
+
+GDPandCellfig <- GDPandCell %>%
+  plot_ly(
+    x = ~GDP, 
+    y = ~Percentage, 
+    #size = ~pop, 
+    color = ~Continent, 
+    frame = ~Year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers',
+    na.rm = TRUE 
+  ) %>% 
+  layout(xaxis = list(
+    type = "log",
+    title = "GDP (international $, PPP-adjusted)"
+    ),
+    yaxis = list(
+     title = "Cell Phone Use (%)"
+    )
+  ) 
+GDPandCellfig
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
