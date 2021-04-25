@@ -179,7 +179,6 @@ clabel <- read_csv(file = "countries-continents.csv",
 continentlabel <- as_tibble(clabel) %>%
   rename("country" = Country)
 
-
 # Filtered out Burkina as the World Bank data did not include Burkina
 newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
   filter(country != "Burkina")
@@ -402,10 +401,6 @@ GDP <- GDPraw %>%
 ```
 
 ```{r}
-cell20
-
-celllong
-GDP
 
 GDPlonger <- GDP %>%
   pivot_longer(names_to = "Year", values_to = "GDP", cols = `2000`:`2019`) %>%
@@ -414,7 +409,6 @@ GDPlonger <- GDP %>%
 
 GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year"))
 
-GDPandCell
 ```
 
 
@@ -445,8 +439,46 @@ GDPandCellfig
 
 ```
 
+```{r}
 
-```{r, messages = FALSE}
+internetlong <- newinternet %>%
+  select(-fiveyearinternet, -tenyearinternet) %>%
+  pivot_longer(names_to = "Year", values_to = "internet", cols = `2000`:`2019`) %>%
+  mutate(Year = as.numeric(Year)) %>%
+  drop_na(internet)
+
+
+
+GDPandInternet <- left_join(internetlong, GDPlonger, by = c("country", "Year")) %>%
+   drop_na()
+
+GDPandInternetfig <- GDPandInternet %>%
+  plot_ly(
+    x = ~GDP, 
+    y = ~internet, 
+    #size = ~pop, 
+    color = ~Continent, 
+    frame = ~Year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers',
+    na.rm = TRUE 
+  ) %>% 
+  layout(xaxis = list(
+    type = "log",
+    title = "GDP (international $, PPP-adjusted)"
+    ),
+    yaxis = list(
+     title = "Internet Use (%)"
+    )
+  ) 
+
+GDPandInternetfig
+```
+
+
+```{r, message = FALSE}
 
 
 internetavg <- newinternet %>%
@@ -463,8 +495,7 @@ pcavg <- pcpercent %>%
 GDPavg <- GDP %>%
   select(country, fiveyearGDP, tenyearGDP)
 
-average %>%
-  arrange(desc(fiveyearGDP))
+
 
 average <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
   left_join(y = pcavg, by = "country") %>%
@@ -502,7 +533,7 @@ internetcellplot10 <- average %>% plot_ly(
     type = 'scatter',
     mode = 'markers'
   ) %>% 
-  layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
+  layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
          xaxis = list(showgrid = TRUE, 
                       title = "Internet Access (%)"),
          yaxis = list(showgrid = TRUE,
@@ -514,6 +545,26 @@ internetcellplot10 <- average %>% plot_ly(
 internetcellplot10
 internetcellplot5
 
+pccell5 <- average %>% plot_ly(
+    x = ~fiveyearpc, 
+    y = ~fiveyearcell, 
+    size = ~tenyearGDP*100, 
+    color = ~Continent, 
+    #frame = ~Year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% 
+  layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
+         xaxis = list(showgrid = TRUE, 
+                      title = "Internet Access (%)"),
+         yaxis = list(showgrid = TRUE,
+                      title = "PC Ownership (%)",
+                      range = c(0, 200))
+           )
+
+pccell5
 ```
 
 
