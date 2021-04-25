@@ -19,6 +19,7 @@ library(readr)
 library(janitor)
 library(ggplot2)
 library(sf)
+library(maps)
 ```
 
 ```{r, include = FALSE}
@@ -93,7 +94,7 @@ cell100 <- as_tibble(cellphones_100) %>%
   select(country, `2000`:`2019`)
 ```
 
-```{r include = FALSE}
+```{r, include = FALSE}
 
 # "An international dollar would buy in the cited country a comparable amount of goods and services a U.S. dollar would buy in the United States. This term is often used in conjunction with Purchasing Power Parity (PPP) data." (World Bank)
 
@@ -186,7 +187,7 @@ newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
   filter(country != "Burkina")
 ```
 
-```{r}
+```{r, include = FALSE}
 
 internetraw <- read_csv(file = "raw_data/internet_users.csv",
                         col_types = cols(
@@ -267,7 +268,7 @@ newinternet <- left_join(internet20, continentlabel, by = "country")
 
 
 
-```{r}
+```{r, include = FALSE}
 
 
 
@@ -308,7 +309,7 @@ makecountrycell <- function(c){
 
 makecountrycell(c = "China")
 ```
-```{r}
+```{r, include = FALSE}
 
 # % of people with personal computers
 
@@ -368,7 +369,7 @@ pcpercent <- pctotalraw %>%
 ```
 
 
-```{r, message = FALSE}
+```{r, include = FALSE}
 
 
 celllong <- cell20 %>%
@@ -402,7 +403,7 @@ GDP <- GDPraw %>%
 
 ```
 
-```{r}
+```{r, include = FALSE}
 
 GDPlonger <- GDP %>%
   pivot_longer(names_to = "Year", values_to = "GDP", cols = `2000`:`2019`) %>%
@@ -414,7 +415,7 @@ GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year"))
 ```
 
 
-```{r}
+```{r, include = FALSE}
 
 GDPandCellfig <- GDPandCell %>%
   plot_ly(
@@ -568,44 +569,6 @@ pccell5 <- average %>% plot_ly(
 
 pccell5
 ```
-
-
-```{r}
-url <- "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
-counties <- rjson::fromJSON(file=url)
-url2<- "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
-df <- read.csv(url2, colClasses=c(fips="character"))
-
-g <- list(
-  showframe = FALSE,
-  showcoastlines = FALSE,
-  projection = list(type = 'Mercator')
-)
-
-
-averagefig <- plot_geo(average)
-averagefig <- averagefig %>% 
-  add_trace(
-    z = ~fiveyearcell, color = ~fiveyearcell, colors = 'Blues',
-    text = ~country, locations = ~country
-  )
-averagefig
-fig <- fig %>% colorbar(title = 'GDP Billions US$', tickprefix = '$')
-fig <- fig %>% layout(
-    title = '2014 Global GDP<br>Source:<a href="https://www.cia.gov/library/publications/the-world-factbook/fields/2195.html">CIA World Factbook</a>',
-    geo = g
-  )
-
-fig <- fig %>% layout(
-    geo = g
-  )
-
-fig
-
-
-
-```
-
 
 
 
