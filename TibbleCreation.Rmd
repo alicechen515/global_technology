@@ -257,8 +257,8 @@ internetraw <- as_tibble(internetraw)
 internet20 <- internetraw %>%
   select(country, `2000`:`2019`) %>%
   rowwise() %>%
-  mutate(tenyearavg = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
-  mutate(fiveyearavg = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+  mutate(tenyearinternet = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  mutate(fiveyearinternet = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
 
 newinternet <- left_join(internet20, continentlabel, by = "country") 
 
@@ -273,8 +273,8 @@ newinternet <- left_join(internet20, continentlabel, by = "country")
 #% of people with Cellphone over 20 years
 cell20 <- newcell100 %>%
   rowwise() %>%
-  mutate(tenyearavg = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
-  mutate(fiveyearavg = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+  mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
 
 countrycellpercent <- cell20 %>%
   filter(country == "China") %>%
@@ -361,7 +361,7 @@ pcpercent <- pctotalraw %>%
   filter(`Indicator` == "Households w/ personal computer, %") %>%
   filter(`Subindicator Type` == "% households") %>%
   rowwise() %>%
-  mutate(fiveyearavg = mean(c( `2015`, `2016`), na.rm = TRUE))
+  mutate(fiveyearpc = mean(c( `2015`, `2016`), na.rm = TRUE))
 
 
 ```
@@ -446,22 +446,83 @@ GDPandCellfig
 ```
 
 
-```{r}
+```{r, messages = FALSE}
 
 
 internetavg <- newinternet %>%
-  select(Continent, country, fiveyearavg, tenyearavg)
+  select(Continent, country, fiveyearinternet, tenyearinternet)
 
 cellavg <- cell20 %>%
-  select(Continent, country, fiveyearavg, tenyearavg)
+  select(Continent, country, fiveyearcell, tenyearcell)
 
-pcpercent %>%
+pcavg <- pcpercent %>%
   rename("country" = `Country Name`) %>%
-  select(country, fiveyearavg)
+  select(country, fiveyearpc) %>%
+  filter(fiveyearpc != "NaN")
+
+GDPavg <- GDP %>%
+  select(country, fiveyearGDP, tenyearGDP)
+
+average %>%
+  arrange(desc(fiveyearGDP))
+
+average <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
+  left_join(y = pcavg, by = "country") %>%
+  left_join(y = GDPavg, by = "country")
+
+
+internetcellplot5 <- average %>% plot_ly(
+    x = ~fiveyearinternet, 
+    y = ~fiveyearcell, 
+    size = ~fiveyearGDP*100, 
+    color = ~Continent, 
+    #frame = ~Year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% 
+  layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
+         xaxis = list(showgrid = TRUE, 
+                      title = "Internet Access (%)",
+         yaxis = list(showgrid = TRUE,
+                      title = "Cellphone Ownership (%)"
+           )
+         )) 
+  
+
+internetcellplot10 <- average %>% plot_ly(
+    x = ~tenyearinternet, 
+    y = ~tenyearcell, 
+    size = ~tenyearGDP*100, 
+    color = ~Continent, 
+    #frame = ~Year, 
+    text = ~country, 
+    hoverinfo = "text",
+    type = 'scatter',
+    mode = 'markers'
+  ) %>% 
+  layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
+         xaxis = list(showgrid = TRUE, 
+                      title = "Internet Access (%)"),
+         yaxis = list(showgrid = TRUE,
+                      title = "Cellphone Ownership (%)",
+                      range = c(0, 200))
+           )
+         
+
+internetcellplot10
+internetcellplot5
 
 ```
 
 
+```{r}
+
+
+
+
+```
 
 
 
