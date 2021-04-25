@@ -17,6 +17,8 @@ library(gganimate)
 library(gifski)
 library(readr)
 library(janitor)
+library(ggplot2)
+library(sf)
 ```
 
 ```{r, include = FALSE}
@@ -569,7 +571,36 @@ pccell5
 
 
 ```{r}
+url <- "https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json"
+counties <- rjson::fromJSON(file=url)
+url2<- "https://raw.githubusercontent.com/plotly/datasets/master/fips-unemp-16.csv"
+df <- read.csv(url2, colClasses=c(fips="character"))
 
+g <- list(
+  showframe = FALSE,
+  showcoastlines = FALSE,
+  projection = list(type = 'Mercator')
+)
+
+
+averagefig <- plot_geo(average)
+averagefig <- averagefig %>% 
+  add_trace(
+    z = ~fiveyearcell, color = ~fiveyearcell, colors = 'Blues',
+    text = ~country, locations = ~country
+  )
+averagefig
+fig <- fig %>% colorbar(title = 'GDP Billions US$', tickprefix = '$')
+fig <- fig %>% layout(
+    title = '2014 Global GDP<br>Source:<a href="https://www.cia.gov/library/publications/the-world-factbook/fields/2195.html">CIA World Factbook</a>',
+    geo = g
+  )
+
+fig <- fig %>% layout(
+    geo = g
+  )
+
+fig
 
 
 
