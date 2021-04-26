@@ -42,7 +42,6 @@ mean_child_mortality <- as_tibble(child_mortality) %>%
 
 mean_child_mortality
 
-read_csv(file = "raw_data/six_vacc_rate.csv")
 
 
 
@@ -122,7 +121,8 @@ cell100 <- as_tibble(cellphones_100) %>%
 
 # "An international dollar would buy in the cited country a comparable amount of goods and services a U.S. dollar would buy in the United States. This term is often used in conjunction with Purchasing Power Parity (PPP) data." (World Bank)
 
-GDPraw <- read_csv(file = "raw_data/GDP_PPP.csv",
+GDPraw1 <- read_csv(file = "raw_data/GDP_PPP.csv",
+            
                    col_types = cols(
                      `Country Name` = col_character(),
                      `Country Code` = col_character(),
@@ -188,12 +188,14 @@ GDPraw <- read_csv(file = "raw_data/GDP_PPP.csv",
                      `2017` = col_double(),
                      `2018` = col_double(),
                      `2019` = col_double(),
-                     `2020` = col_logical(),
-                     X66 = col_logical()
+                     `2020` = col_logical()
                    )
                    )
 
-GDPraw <- as_tibble(GDPraw)
+# Delete the X66 column, since we don't need it.
+
+GDPraw <- as_tibble(GDPraw1) %>%
+  select(-`2020`, -`X66`)
 
 # Internet data cleaning
 
@@ -264,11 +266,24 @@ internetraw <- read_csv(file = "raw_data/internet_users.csv",
 )
 
 internetraw <- as_tibble(internetraw)
+
 internet20 <- internetraw %>%
   select(country, `2000`:`2019`) %>%
   rowwise() %>%
   mutate(tenyearinternet = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   mutate(fiveyearinternet = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+
+# Countries & Continents labels data cleaning
+
+clabel <- read_csv(file = "countries-continents.csv",
+                   col_types = cols(
+                     Continent = col_character(),
+                     Country = col_character()
+                   ))
+
+
+continentlabel <- as_tibble(clabel) %>%
+  rename("country" = Country)
 
 newinternet <- left_join(internet20, continentlabel, by = "country") 
 
@@ -302,7 +317,7 @@ pcraw1 <- read_csv(file = "raw_data/personal_computers_per_100_people.csv",
                    )
 )
 
-pcraw1 <- as_tibble(pcraw1)
+pcraw <- as_tibble(pcraw1)
 
 # This dataset has all the indicators included, hence why the table has 19870 rows. Need to filter for the indicator we want, which is % of PC ownership.
 pctotalraw <- read_csv(file = "raw_data/data.csv",
@@ -331,16 +346,8 @@ pcpercent <- pctotalraw %>%
 
 
 
-# Countries & Continents labels data cleaning
 
-clabel <- read_csv(file = "countries-continents.csv",
-                   col_types = cols(
-                     Continent = col_character(),
-                     Country = col_character()
-                   ))
 
-continentlabel <- as_tibble(clabel) %>%
-  rename("country" = Country)
 
 # Filtered out Burkina as the World Bank data did not include Burkina
 
@@ -354,36 +361,23 @@ cell20 <- newcell100 %>%
   mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
 
-countrycellpercent <- cell20 %>%
+countrycellpercent <- as_tibble(cell20) %>%
   filter(country == "China") %>%
   select( `2000`:`2019`) %>%
   pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
   mutate(Year = as.numeric(Year)) %>%
+  drop_na() %>%
   ggplot(aes(x = Year, y = Percentage)) +
   geom_point( alpha = 0.7) +
-  theme_linedraw() +
-  transition_time(Year) +
-  labs(title = "Years: {round(frame_time,0)}") +
-  shadow_wake(wake_length = 0.3, alpha = FALSE)
+  theme_bw() +
+  transition_reveal(Year) +
+  labs(title = "Year: {round(frame_time,0)}") +
+  shadow_wake(wake_length = 1, alpha = FALSE)
 
 countrycellpercent
 
-makecountrycell <- function(c){
-  
-  outputplot <- cell20 %>%
-    filter(country == c) %>%
-    select( `2000`:`2019`) %>%
-    pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
-    mutate(Year = as.numeric(Year)) %>%
-    ggplot(aes(x = Year, y = Percentage)) +
-    geom_point(alpha = 0.7) +
-    theme_linedraw() +
-    
-    ggsave("images/outputplot.png")
-  print("images/outputplot.png")
-}
 
-makecountrycell(c = "China")
+
 
 # Long tibble of country, year, and cellphone ownership
 
@@ -391,6 +385,8 @@ celllong <- cell20 %>%
   pivot_longer(names_to = "Year", values_to = "Percentage", cols = `2000`:`2019` ) %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na(Percentage)
+
+
 
 # Graphic of change in cell ownership by year
 
@@ -419,8 +415,8 @@ GDPlonger <- GDP %>%
 
 #GDP and Cellphone 
 
-GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year"))
-
+GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year")) %>%
+  drop_na(GDP)
 # Moving graph of GDP to cellphone ownership
 GDPandCellfig <- GDPandCell %>%
   plot_ly(
@@ -432,8 +428,7 @@ GDPandCellfig <- GDPandCell %>%
     text = ~country, 
     hoverinfo = "text",
     type = 'scatter',
-    mode = 'markers',
-    na.rm = TRUE 
+    mode = 'markers'
   ) %>% 
   layout(xaxis = list(
     type = "log",
@@ -443,6 +438,8 @@ GDPandCellfig <- GDPandCell %>%
     title = "Cell Phone Use (%)"
   )
   ) 
+
+GDPandCellfig
 
 internetlong <- newinternet %>%
   select(-fiveyearinternet, -tenyearinternet) %>%
@@ -465,8 +462,7 @@ GDPandInternetfig <- GDPandInternet %>%
     text = ~country, 
     hoverinfo = "text",
     type = 'scatter',
-    mode = 'markers',
-    na.rm = TRUE 
+    mode = 'markers'
   ) %>% 
   layout(xaxis = list(
     type = "log",
@@ -494,13 +490,15 @@ GDPavg <- GDP %>%
   select(country, fiveyearGDP, tenyearGDP)
 
 
-average <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
+average1 <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
   left_join(y = pcavg, by = "country") %>%
   left_join(y = GDPavg, by = "country")
 
+average <- as_tibble(average1)
+
 # if fill does not exist, `size` controls line.width
 
-average <- average[order(average$fiveyearGDP),]
+#average <- average[order(average$fiveyearGDP),]
 
 internetcellplot5a <- average %>% 
   drop_na() %>%
@@ -524,7 +522,7 @@ internetcellplot5a <- average %>%
                                    title = "Cellphone Ownership (%)"
                       )
          )) 
-internetcellplot5
+internetcellplot5a
 
 internetcellplot5 <- average %>% plot_ly(
   x = ~fiveyearinternet, 

@@ -17,6 +17,8 @@
 library(shiny)
 library(tidyverse)
 library(shinythemes)
+library(gt)
+library(gtsummary)
 source(file = "child_mortality_graphs.R")
 source(file = "Model.R")
 
@@ -24,38 +26,40 @@ source(file = "Model.R")
 # Define UI for application
 ui <- navbarPage(
     "Final Project Title",
-    tabPanel("My Plot",
-             fluidPage(
-                 titlePanel("Model Title"),
-                 sidebarLayout(
-                     sidebarPanel(
-                         selectInput(
-                             "plot_type",
-                             "Plot Type",
-                             c("Option A" = "a", "Option B" = "b")
-                         )),
-                     mainPanel(plotOutput("map",
-                                          width = 450,
-                                          height = 500))),
-                 sidebarLayout(
-                     sidebarPanel(
-                         selectInput(
-                             "plot_type2",
-                             "Plot Type",
-                             c("Option A" = "a", "Option B" = "b")
-                         )),
-                     mainPanel(plotOutput("map2", 
-                                          width = 450,
-                                          height = 500)))
-             )),
+    tabPanel("Technology Over Time",
+             h1("How does ownership of personal technology devices and income levels change over time?"),
+             p("Based on the UN Sustainable Development Goals", 
+               style = "font-size:20px;"),
+             br(),
+             
+             # Main Panel
+             mainPanel(
+                 selectInput(inputId = "plotly_type1",
+                             label = "Choose a type of technology",
+                             choices = c("Cell", "Internet"),
+                             selected = "Cell")
+                 
+             ),
+             plotlyOutput("map")
+             ),
     tabPanel("Model",
              titlePanel("Predictive Model of Cell Phone Subscription Based on GDP per capita"),
-             gt_output("table1"),
-             plotOutput("plot3", 
+             sidebarPanel(gt_output("table1")),
+             mainPanel(plotOutput("plot3", 
                         width = 600,
-                        height = 500),
+                        height = 500)),
              titlePanel("Predictive Model of Internet Subscription Based on GDP per capita"),
-             gt_output("table2")),
+             sidebarPanel(gt_output("table2")),
+             mainPanel(plotOutput("plot4"))),
+    tabPanel("Changes by Country",
+             titlePanel("Predictive Model of Cell Phone Subscription Based on GDP per capita"),
+             sidebarPanel(gt_output("table1")),
+             mainPanel(plotOutput("plot3", 
+                                  width = 600,
+                                  height = 500)),
+             titlePanel("Predictive Model of Internet Subscription Based on GDP per capita"),
+             sidebarPanel(gt_output("table2")),
+             mainPanel(plotOutput("plot4"))),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
              p("Tour of the modeling choices you made and 
@@ -73,22 +77,59 @@ ui <- navbarPage(
              p("I will use GapMinder for immunization information and World Bank data for a country's income and development index.")
              )
     )
+    
+
 
 # Define server logic required 
 server <- function(input, output) {
     
-    output$map <- renderPlotly(
-        if(input$plot_type == "a"){internetcellplot5} 
-        else if(input$plot_type =="b"){internetcellplot10}
+    output$map <- renderPlotly( 
+            if (input$plotly_type1 == "Internet") {GDPandInternetfig
+            }
+                else{GDPandCellfig}
+            
+            
     )
+        
+
+    
     
     output$map2 <- renderImage(
-        if(input$plot_type2 == "a"){makecountrycell(c = "China")} 
-        else if(input$plot_type2 =="b"){makecountrycell(c = "China")}
+        if(input$plot_type2 == "a"){GDPandCellfig} 
+        else if(input$plot_type2 =="b"){GDPandCellfig}, 
+        deleteFile=TRUE
+    )
+    
+    output$map3 <- renderPlotly(
+            GDPandInternet %>%
+                plot_ly(
+                    x = ~GDP, 
+                    y = ~internet, 
+                    #size = ~pop, 
+                    color = ~Continent, 
+                    frame = ~Year, 
+                    text = ~country, 
+                    hoverinfo = "text",
+                    type = 'scatter',
+                    mode = 'markers'
+                ) %>% 
+                layout(xaxis = list(
+                    type = "log",
+                    title = "GDP (international $, PPP-adjusted)"
+                ),
+                yaxis = list(
+                    title = "Internet Use (%)"
+                )
+                ) 
+
     )
     
     output$plot3 <- renderPlot(
         pecellplot
+    )
+    
+    output$plot4 <- renderPlot(
+        peinternetplot
     )
     
     # Model of GDP to Cell in a Table
@@ -113,7 +154,26 @@ server <- function(input, output) {
 }
     
 
-
+GDPandInternet %>%
+    plot_ly(
+        x = ~GDP, 
+        y = ~internet, 
+        #size = ~pop, 
+        color = ~Continent, 
+        frame = ~Year, 
+        text = ~country, 
+        hoverinfo = "text",
+        type = 'scatter',
+        mode = 'markers'
+    ) %>% 
+    layout(xaxis = list(
+        type = "log",
+        title = "GDP (international $, PPP-adjusted)"
+    ),
+    yaxis = list(
+        title = "Internet Use (%)"
+    )
+    )
 
 
 # Run the application 

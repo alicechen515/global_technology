@@ -1,4 +1,4 @@
-library(tidycensus)
+
 library(shinythemes)
 library(shiny)
 library(plotly)
@@ -11,6 +11,8 @@ library(sf)
 library(maps)
 library(rstanarm)
 library(gt)
+library(gtsummary)
+library(ggdist)
 
 source(file = "child_mortality_graphs.R")
 
@@ -117,7 +119,7 @@ pecellplot <- pecelllong %>%
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) +
   theme_bw()
 
-
+# Creating stan_glm model for internet to GDP
 
 internetGDPmodel <- stan_glm(data = average,
                              formula = fiveyearinternet ~ fiveyearGDP,
@@ -133,6 +135,40 @@ internetGDPmodeltbl <- tbl_regression(internetGDPmodel,
              subtitle = "How GDP predicts Percentage of Internet Subscriptions per 100 People") %>%
   tab_source_note(md("Source: World Bank (2020) and UN (2020)")) %>% 
   cols_label(estimate = md("**Parameter**"))
+
+# Creating a posterior distribution for internet subscriptions
+
+newobsinternet <- tibble(fiveyearGDP = 
+                       c(lowincome, lowmidincome, uppermidincome, highincome),
+                     names = c("Low Income", "Low-Middle Income", "Upper Middle Income", "High Income")
+)
+
+peinternet <- posterior_epred(internetGDPmodel,
+                          newdata = newobsinternet) %>%
+  as_tibble %>%
+  set_names(newobscell$names)
+
+
+# Creating the plot for posterior of cell phone and GDP. Is stat_slab the best
+# way to visualize this data? Would histograms that are facet_wrapped be better?
+
+peinternetlong <- peinternet %>%
+  pivot_longer(cols = everything(), 
+               names_to = "Income Classification", 
+               values_to = "Internet Subscription")
+
+peinternetplot <- peinternetlong %>%
+  ggplot(aes(x = `Internet Subscription`, 
+             y = `Income Classification`)) +
+  stat_slab(alpha = 0.3) +
+  labs(title = "Proportion of Population with Internet Subscription",
+       subtitle = "How GDP predicts Percentage of Internet Subscriptions per 100 People",
+       x = "Internet Subscription per 100 people",
+       y = "Income Classification",
+       caption = "Source: World Bank (2020) and UN (2020)") +
+  scale_x_continuous(labels = scales::number_format(accuracy = 1)) +
+  theme_bw()
+
 
 
 

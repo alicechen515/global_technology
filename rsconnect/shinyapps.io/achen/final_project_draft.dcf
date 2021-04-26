@@ -1,0 +1,12 @@
+name: final_project_draft
+title: final_project_draft
+username:
+account: achen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4034157
+bundleId: 4522130
+url: https://achen.shinyapps.io/final_project_draft/
+when: 1619467018.0527
+asMultiple: FALSE
+asStatic: FALSE
