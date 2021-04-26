@@ -18,7 +18,7 @@ library(shiny)
 library(tidyverse)
 library(shinythemes)
 source(file = "child_mortality_graphs.R")
-source(file = "TibbleCreation.Rmd")
+source(file = "Model.R")
 
 
 # Define UI for application
@@ -34,7 +34,9 @@ ui <- navbarPage(
                              "Plot Type",
                              c("Option A" = "a", "Option B" = "b")
                          )),
-                     mainPanel(plotOutput("map"))),
+                     mainPanel(plotOutput("map",
+                                          width = 450,
+                                          height = 500))),
                  sidebarLayout(
                      sidebarPanel(
                          selectInput(
@@ -42,8 +44,18 @@ ui <- navbarPage(
                              "Plot Type",
                              c("Option A" = "a", "Option B" = "b")
                          )),
-                     mainPanel(plotOutput("map2")))
+                     mainPanel(plotOutput("map2", 
+                                          width = 450,
+                                          height = 500)))
              )),
+    tabPanel("Model",
+             titlePanel("Predictive Model of Cell Phone Subscription Based on GDP per capita"),
+             gt_output("table1"),
+             plotOutput("plot3", 
+                        width = 600,
+                        height = 500),
+             titlePanel("Predictive Model of Internet Subscription Based on GDP per capita"),
+             gt_output("table2")),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
              p("Tour of the modeling choices you made and 
@@ -65,16 +77,31 @@ ui <- navbarPage(
 # Define server logic required 
 server <- function(input, output) {
     
-    output$map <- renderPlot(
-        if(input$plot_type == "a"){mean_child_mortality} 
-        else if(input$plot_type =="b"){child_mortality_tbl}
+    output$map <- renderPlotly(
+        if(input$plot_type == "a"){internetcellplot5} 
+        else if(input$plot_type =="b"){internetcellplot10}
     )
     
-    output$map2 <- renderPlot(
-        if(input$plot_type2 == "a"){mean_child_mortality} 
-        else if(input$plot_type2 =="b"){child_mortality_tbl}
+    output$map2 <- renderImage(
+        if(input$plot_type2 == "a"){makecountrycell(c = "China")} 
+        else if(input$plot_type2 =="b"){makecountrycell(c = "China")}
     )
     
+    output$plot3 <- renderPlot(
+        pecellplot
+    )
+    
+    # Model of GDP to Cell in a Table
+    output$table1 <- render_gt({
+        cellGDPmodeltbl
+    })
+    
+    
+    
+    # Model of GDP to Internet in a Table
+    output$table2 <- render_gt({
+        internetGDPmodeltbl
+    })
     
     #renderImage()
     
