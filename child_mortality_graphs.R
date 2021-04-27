@@ -11,6 +11,7 @@ library(janitor)
 library(ggplot2)
 library(sf)
 library(maps)
+library(transformr)
 
 
 
@@ -361,7 +362,7 @@ cell20 <- newcell100 %>%
   mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
 
-countrycellpercent <- as_tibble(cell20) %>%
+countrycellpercent <- cell20 %>%
   filter(country == "China") %>%
   select( `2000`:`2019`) %>%
   pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
@@ -373,10 +374,6 @@ countrycellpercent <- as_tibble(cell20) %>%
   transition_reveal(Year) +
   labs(title = "Year: {round(frame_time,0)}") +
   shadow_wake(wake_length = 1, alpha = FALSE)
-
-countrycellpercent
-
-
 
 
 # Long tibble of country, year, and cellphone ownership
@@ -390,13 +387,13 @@ celllong <- cell20 %>%
 
 # Graphic of change in cell ownership by year
 
-allcountriescell <-  celllong %>%
+allcountriescell <-  as_tibble(celllong) %>%
   ggplot(aes(x = Year, y = Percentage, fill = Continent,colour = Continent, na.rm = TRUE )) +
   facet_wrap(~Continent, nrow = 2) +
   geom_point( alpha = 0.7)  +
   transition_time(Year) +
   labs(title = "Years: {round(frame_time,0)}") +
-  shadow_wake(wake_length = 0.3, alpha = FALSE)
+  shadow_wake(wake_length = 0.1, alpha = FALSE)
 
 # GDP Data
 
@@ -500,31 +497,33 @@ average <- as_tibble(average1)
 
 #average <- average[order(average$fiveyearGDP),]
 
-internetcellplot5a <- average %>% 
+# internetcellplot5a <- average %>% 
+#   drop_na() %>%
+#   plot_ly(
+#   x = ~fiveyearinternet, 
+#   y = ~fiveyearcell, 
+#   span = ~fiveyearGDP ,
+#   color = ~Continent, 
+#   #frame = ~Year, 
+#   text = ~country, 
+#   hoverinfo = "text",
+#   type = 'scatter',
+#   mode = 'markers',
+#   marker = list(size = ~fiveyearGDP),
+#   fill = ~""
+# ) %>% 
+#   layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
+#          xaxis = list(showgrid = TRUE, 
+#                       title = "Internet Access (%)",
+#                       yaxis = list(showgrid = TRUE,
+#                                    title = "Cellphone Ownership (%)"
+#                       )
+#          )) 
+# internetcellplot5a
+
+internetcellplot5 <- average %>% 
   drop_na() %>%
   plot_ly(
-  x = ~fiveyearinternet, 
-  y = ~fiveyearcell, 
-  span = ~fiveyearGDP ,
-  color = ~Continent, 
-  #frame = ~Year, 
-  text = ~country, 
-  hoverinfo = "text",
-  type = 'scatter',
-  mode = 'markers',
-  marker = list(size = ~fiveyearGDP),
-  fill = ~""
-) %>% 
-  layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
-         xaxis = list(showgrid = TRUE, 
-                      title = "Internet Access (%)",
-                      yaxis = list(showgrid = TRUE,
-                                   title = "Cellphone Ownership (%)"
-                      )
-         )) 
-internetcellplot5a
-
-internetcellplot5 <- average %>% plot_ly(
   x = ~fiveyearinternet, 
   y = ~fiveyearcell, 
   size = ~fiveyearGDP*100, 
