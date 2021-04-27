@@ -5,8 +5,8 @@ account: achen
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4034157
-bundleId: 4522130
+bundleId: 4523473
 url: https://achen.shinyapps.io/final_project_draft/
-when: 1619467018.0527
+when: 1619497288.46582
 asMultiple: FALSE
 asStatic: FALSE

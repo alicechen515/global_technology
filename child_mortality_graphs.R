@@ -370,11 +370,10 @@ countrycellpercent <- cell20 %>%
   drop_na() %>%
   ggplot(aes(x = Year, y = Percentage)) +
   geom_point( alpha = 0.7) +
-  theme_bw() +
-  transition_reveal(Year) +
-  labs(title = "Year: {round(frame_time,0)}") +
-  shadow_wake(wake_length = 1, alpha = FALSE)
+  theme_bw() 
 
+
+ 
 
 # Long tibble of country, year, and cellphone ownership
 
@@ -427,7 +426,8 @@ GDPandCellfig <- GDPandCell %>%
     type = 'scatter',
     mode = 'markers'
   ) %>% 
-  layout(xaxis = list(
+  layout(title = "GDP to Cell Phone Access per 100 people, 2000-2019",
+         xaxis = list(
     type = "log",
     title = "GDP (international $, PPP-adjusted)"
   ),
@@ -461,7 +461,8 @@ GDPandInternetfig <- GDPandInternet %>%
     type = 'scatter',
     mode = 'markers'
   ) %>% 
-  layout(xaxis = list(
+  layout(title = "GDP to Internet Access per 100 people, 2000-2019",
+         xaxis = list(
     type = "log",
     title = "GDP (international $, PPP-adjusted)"
   ),
@@ -492,6 +493,8 @@ average1 <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
   left_join(y = GDPavg, by = "country")
 
 average <- as_tibble(average1)
+
+
 
 # if fill does not exist, `size` controls line.width
 
@@ -585,4 +588,5 @@ pccell5 <- average %>% plot_ly(
                       title = "PC Ownership (%)",
                       range = c(0, 200))
   )
+
 

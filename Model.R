@@ -169,6 +169,26 @@ peinternetplot <- peinternetlong %>%
   scale_x_continuous(labels = scales::number_format(accuracy = 1)) +
   theme_bw()
 
+# Created a version of average where there were no NA values for fiveyearcell,
+# fiveyearGDP, or Continent, so I can properly model it. This feels like it may
+# lead to inaccuracies due to the omissions in data, but is neccessary at this
+# point.
+
+cleancellaverage <- average %>%
+  drop_na(Continent) %>%
+  drop_na(fiveyearcell) %>%
+  drop_na(fiveyearGDP)
+
+continentCellmodel <- stan_glm(data = cleancellaverage,
+                         formula = fiveyearcell ~ fiveyearGDP + Continent,
+                         family = gaussian,
+                         seed = 15,
+                         refresh = 0)
+
+newobscontinentCell <- tibble(fiveyearGDP = 
+                           c(lowincome, lowmidincome, uppermidincome, highincome),
+                         names = c("Low Income", "Low-Middle Income", "Upper Middle Income", "High Income")
+)
 
 
 

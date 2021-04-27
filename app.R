@@ -28,7 +28,8 @@ ui <- navbarPage(
     "Final Project Title",
     tabPanel("Technology Over Time",
              h1("How does ownership of personal technology devices and income levels change over time?"),
-             p("Based on the UN Sustainable Development Goals", 
+             p("Countries experienced strong growth in technology access over time. 
+               There is also a strong correlation between GDP per capita and technology access.", 
                style = "font-size:20px;"),
              br(),
              
@@ -65,19 +66,48 @@ ui <- navbarPage(
                Each dollar that per capita income rises by increases cell phone 
                subscriptions per 100 people by 0.0008.4863."),
              gt_output(outputId = "table1"),
-             plotOutput("plot1"),
+             plotOutput("plot1",
+                        height = px(400),
+                        width = px(600)),
              p("The table below specifies the relationship between internet 
                subscription and the per capita income of a country.
                Each dollar that per capita income rises by increases internet 
                subscriptions per 100 people by 0.00108876."),
              gt_output(outputId = "table2"),
-             plotOutput("plot2")
+             plotOutput("plot2",
+                        height = px(400),
+                        width = px(600))
              ),
-    tabPanel("Average Technology Access",
-             titlePanel("Discussion Title"),
-             p("Tour of the modeling choices you made and 
-              an explanation of why you made them"),
-             plotlyOutput()),
+    tabPanel("National Technology Access Over Time",
+             titlePanel("How does access to internet and cell phones change 
+                        over time for each country?"),
+             p("Most countries see clear growth in both cell phone and 
+               internet access from 2000 to 2019."),
+             mainPanel(
+                 selectInput(inputId = "forplot3",
+                             label = "Choose a Country",
+                             choices = cell20$country,
+                             selected = "China")
+                 
+             ),
+             plotOutput("plot3",
+                        height = px(400),
+                        width = px(600)),
+             br(),
+             br(),
+             br(),
+             br(),
+             mainPanel(
+                 selectInput(inputId = "forplot4",
+                             label = "Choose a Country",
+                             choices = internet20$country,
+                             selected = "China")
+                 
+             ),
+             plotOutput("plot4",
+                        height = px(400),
+                        width = px(600))
+             ),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
              p("Tour of the modeling choices you made and 
@@ -149,33 +179,40 @@ server <- function(input, output) {
         peinternetplot}
     )
     
-    output$plot3 <- renderPlot({
-        
-        gap_anim <- average %>%
-            filter(country == "China") %>%
-            select(`2000`:`2019`) %>%
-            pivot_longer(cols = everything(), 
-                         values_to = "cell_percent", 
-                         names_to = "years") %>%
+    output$plot3 <- renderPlot({ 
+        cell20 %>%
+        filter(country == input$forplot3) %>%
+        select( `2000`:`2019`) %>%
+        pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
+        mutate(Year = as.numeric(Year)) %>%
+        drop_na() %>%
+        ggplot(aes(x = Year, y = Percentage)) +
+        geom_point( alpha = 0.7) +
+        theme_bw() +
+        labs(title = "National Cell Phone Subscription over a 20 Year Period",
+             x = "Year",
+             y = "Number per 100 People")
+    })
+    
+    output$plot4 <- renderPlot({ 
+        internet20 %>%
+            filter(country == input$forplot4) %>%
+            select( `2000`:`2019`) %>%
+            pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
+            mutate(Year = as.numeric(Year)) %>%
             drop_na() %>%
-            ggplot(aes(x = years, y = cell_percent)) +
-            geom_line(show.legend = FALSE, alpha = 0.7) +
-            scale_size(range = c(2, 12)) +
-            scale_x_log10() +
-            labs(subtitle = "Life Expectancy and GDP per Capita (1952-2007)",
-                 x = "GDP per Capita, USD",
-                 y = "Life Expectancy, Years") +
-            theme_linedraw() +
-            transition_time(year) +
-            labs(title = "Year: {frame_time}") +
-            shadow_wake(wake_length = 0.1, alpha = FALSE)
-        
+            ggplot(aes(x = Year, y = Percentage)) +
+            geom_point( alpha = 0.7) +
+            theme_bw() +
+            labs(title = "National Internet Subscription over a 20 Year Period",
+                 x = "Year",
+                 y = "Number per 100 People")
     })
     
     # Model of GDP to Cell in a Table
     output$table1 <- render_gt(
         expr = cellGDPmodeltbl,
-        height = px(600),
+        height = px(300),
         width = px(600)
     )
     
@@ -184,7 +221,7 @@ server <- function(input, output) {
     # Model of GDP to Internet in a Table
     output$table2 <- render_gt(
         internetGDPmodeltbl,
-        height = px(600),
+        height = px(300),
         width = px(600)
     )
     
