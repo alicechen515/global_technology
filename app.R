@@ -13,19 +13,32 @@
 #Modelling
 #descriptions for everything done
 
-#setup
+# Setup for App
+
 library(shiny)
 library(tidyverse)
 library(shinythemes)
 library(gt)
 library(gtsummary)
+library(rstanarm)
+library(broom.mixed)
 source(file = "child_mortality_graphs.R")
 source(file = "Model.R")
 
 
 # Define UI for application
+
+
 ui <- navbarPage(
-    "Final Project Title",
+    
+    # Name of the title panel displayed on the top of the webpage
+    
+    "Adoption of Personal Technology and Devices Across Countries and Time",
+    
+    # Panel 1 This is my introductory panel and the main visual I want to show,
+    # at this point. The interactive diagram shows the correlation between and
+    # change in GDP and technology access across a span of 20 years.
+    
     tabPanel("Technology Over Time",
              h1("How does ownership of personal technology devices and income levels change over time?"),
              p("Countries experienced strong growth in technology access over time. 
@@ -33,7 +46,8 @@ ui <- navbarPage(
                style = "font-size:20px;"),
              br(),
              
-             # Main Panel
+             # Main Panel. Changes as input or selection from site visitors change
+             
              mainPanel(
                  selectInput(inputId = "plotly_type1",
                              label = "Choose a type of technology",
@@ -43,6 +57,16 @@ ui <- navbarPage(
              ),
              plotlyOutput("map")
              ),
+    
+    # Panel 2 This is a predictive model I created using stan_glm() that
+    # highlights the correlation between income and technology access. 
+    
+    # Using gt was very finicky and I has significant trouble with plotting it
+    # to the Shiny. Seems like the difference between creating a plot vs a gt in
+    # the server part of this code is whether or not to use curly braces.
+    
+    # Each table is followed by a plit, that plots the median value for each income bracket.
+    
     tabPanel("Model",
              titlePanel("Predictive Models of Personal Technology Device Access
                         Based On Country's Income Level"),
@@ -66,6 +90,11 @@ ui <- navbarPage(
                Each dollar that per capita income rises by increases cell phone 
                subscriptions per 100 people by 0.0008.4863."),
              gt_output(outputId = "table1"),
+             
+             # Had to resize the plots and gt tables, or it would stretch across
+             # the entire page, making values/changes in y-axis very hard to
+             # see. Settled on a long rectangle shape
+             
              plotOutput("plot1",
                         height = px(400),
                         width = px(600)),
@@ -78,11 +107,22 @@ ui <- navbarPage(
                         height = px(400),
                         width = px(600))
              ),
+    
+    # Panel 3
+    # This panel looks simple, but it is because I was unable to print a
+    # stagnant plot_ly and instead had to revert back to ggplot. I also was
+    # unable to animate a ggplot that was a line graph, instead of a scatter or
+    # point graph.
+    
+    # This panel takes the input for a specific country and only displays the
+    # graph for that country.
+    
     tabPanel("National Technology Access Over Time",
              titlePanel("How does access to internet and cell phones change 
                         over time for each country?"),
              p("Most countries see clear growth in both cell phone and 
                internet access from 2000 to 2019."),
+             h6("Cell Phone Access by Country"),
              mainPanel(
                  selectInput(inputId = "forplot3",
                              label = "Choose a Country",
@@ -97,6 +137,7 @@ ui <- navbarPage(
              br(),
              br(),
              br(),
+             h6("Internet Access by Country"),
              mainPanel(
                  selectInput(inputId = "forplot4",
                              label = "Choose a Country",
@@ -108,16 +149,28 @@ ui <- navbarPage(
                         height = px(400),
                         width = px(600))
              ),
-    tabPanel("Discussion",
-             titlePanel("Discussion Title"),
-             p("Tour of the modeling choices you made and 
-              an explanation of why you made them")),
+    
+    # Panel 4
+    # Discussion panel about my general work on this project.
+    
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
-             p("Hello, this is where I talk about my project."),
+             p("I've spent the year working in the student startup space at 
+               Boston and with various venture capital groups. Not only have I 
+               been introduced to the potential for technology to make our lives
+               more convenient, I've learned that access to mobile technology 
+               grown significantly in countries around the world. 
+               The phenomenon of 'leapfrogging' is studied in developmental 
+               economics, referencing countries that jump beyond certain stages 
+               of technological/economic development in an order dissimilar to 
+               many western countries. I'm interested in examining the precise 
+               rate of adoption of mobile technology and the spread of the internet 
+               as GDP increases and time passes"),
              h3("About Me"),
-             p("My name is Alice Chen and I study Economics. 
+             p("My name is Alice Chen and I'm a Canadian freshman at Harvard 
+               College studying Economics and CS. I'm passionate about using R to 
+               study economic development, innovation & venture capital, and gender equity. 
              You can reach me at alicechen@college.harvard.edu."),
              h4("My Repo"),
              p("https://github.com/alicechen2002/-gov1005-recitation-week-4-"),
@@ -128,8 +181,11 @@ ui <- navbarPage(
     
 
 
-# Define server logic required 
+# Server takes input from the interactive website and outputs plots
+
 server <- function(input, output) {
+    
+    # Animated graph of GDP and Internet access over time
     
     output$map <- renderPlotly( 
             if (input$plotly_type1 == "Internet") {GDPandInternetfig
@@ -139,13 +195,15 @@ server <- function(input, output) {
     )
         
 
-    
+    # Animated graph of GDP and Cell Phone access over time
     
     output$map2 <- renderImage(
         if(input$plot_type2 == "a"){GDPandCellfig} 
         else if(input$plot_type2 =="b"){GDPandCellfig}, 
         deleteFile=TRUE
     )
+    
+    # Animated graph of second GDP and Cell Phone access plot over time
     
     output$map3 <- renderPlotly(
             GDPandInternet %>%
@@ -171,13 +229,19 @@ server <- function(input, output) {
 
     )
     
+    # Plot of posterior distribution of cell phone access based on income levels
+    
     output$plot1 <- renderPlot({
         pecellplot}
     )
     
+    # Plot of posterior distribution of internet access based on income levels
+    
     output$plot2 <- renderPlot({
         peinternetplot}
     )
+    
+    # Plot of specific country and cell phone access
     
     output$plot3 <- renderPlot({ 
         cell20 %>%
@@ -193,6 +257,8 @@ server <- function(input, output) {
              x = "Year",
              y = "Number per 100 People")
     })
+    
+    # Plot of specific country and cell phone access
     
     output$plot4 <- renderPlot({ 
         internet20 %>%
@@ -210,6 +276,7 @@ server <- function(input, output) {
     })
     
     # Model of GDP to Cell in a Table
+    
     output$table1 <- render_gt(
         expr = cellGDPmodeltbl,
         height = px(300),
@@ -219,6 +286,7 @@ server <- function(input, output) {
     
     
     # Model of GDP to Internet in a Table
+    
     output$table2 <- render_gt(
         internetGDPmodeltbl,
         height = px(300),
@@ -234,28 +302,6 @@ server <- function(input, output) {
 
 }
     
-
-# GDPandInternet %>%
-#     plot_ly(
-#         x = ~GDP, 
-#         y = ~internet, 
-#         #size = ~pop, 
-#         color = ~Continent, 
-#         frame = ~Year, 
-#         text = ~country, 
-#         hoverinfo = "text",
-#         type = 'scatter',
-#         mode = 'markers'
-#     ) %>% 
-#     layout(xaxis = list(
-#         type = "log",
-#         title = "GDP (international $, PPP-adjusted)"
-#     ),
-#     yaxis = list(
-#         title = "Internet Use (%)"
-#     )
-#     )
-
 
 
 # Run the application 

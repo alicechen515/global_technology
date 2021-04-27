@@ -14,39 +14,8 @@ library(maps)
 library(transformr)
 
 
-
-child_mortality <- read_csv(file = "raw_data/child_mortality_0_5_year_olds_dying_per_1000_born.csv",
-                            col_types = cols(
-                              .default = col_double(),
-                              country = col_character()
-                            )
-                            )
-
-child_mortality_tbl <- as_tibble(child_mortality) %>%
-  select("country", "2000", "2020") %>%
-  slice(1:10) %>%
-  ggplot(mapping = aes(x = country, 
-                       y = `2020`)) +
-  geom_point()
-
-child_mortality_tbl
-
-mean_child_mortality <- as_tibble(child_mortality) %>%
-  rowwise() %>%
-  mutate(mean = mean(c_across(`1800`:`2020`))) %>%
-  drop_na() %>%
-  select("country", "mean") %>%
-  slice(1:10) %>%
-  ggplot(mapping = aes(x = country, 
-                       y = mean)) +
-  geom_point()
-
-mean_child_mortality
-
-
-
-
 # Data cleaning for cellphone data
+# Set the column types based on output from spec() function
 
 cellphones_100 <- read_csv(file = "cell_phones_per_100_people.csv",
                            col_types = cols(
@@ -115,12 +84,17 @@ cellphones_100 <- read_csv(file = "cell_phones_per_100_people.csv",
                            
 )
 
+# Takes only the recent 20 years of values.
+
 cell100 <- as_tibble(cellphones_100) %>%
   select(country, `2000`:`2019`)
 
 # GDP Data cleaning
 
-# "An international dollar would buy in the cited country a comparable amount of goods and services a U.S. dollar would buy in the United States. This term is often used in conjunction with Purchasing Power Parity (PPP) data." (World Bank)
+# "An international dollar would buy in the 
+# cited country a comparable amount of goods and services a 
+# U.S. dollar would buy in the United States. This term is often used in 
+# conjunction with Purchasing Power Parity (PPP) data." (World Bank)
 
 GDPraw1 <- read_csv(file = "raw_data/GDP_PPP.csv",
             
@@ -266,7 +240,11 @@ internetraw <- read_csv(file = "raw_data/internet_users.csv",
                         )
 )
 
+# I had trouble with the data until I converted it to a tibble
+
 internetraw <- as_tibble(internetraw)
+
+# Takes only the recent 20 years of values.
 
 internet20 <- internetraw %>%
   select(country, `2000`:`2019`) %>%
@@ -293,7 +271,10 @@ newinternet <- left_join(internet20, continentlabel, by = "country")
 
 # % of people with personal computers
 
-# This data is problematic. I have two sources, one from the United Nations that measures personal computer ownership per 100 people from 1990 to 2006, and another from the World bank 
+# This data is problematic. I have two sources, one from the United Nations that
+# measures personal computer ownership per 100 people from 1990 to 2006, and
+# another from the World bank that covers 2009-2019. I ended up not the United 
+# Nations data, but am keeping it here in case I need it.
 
 pcraw1 <- read_csv(file = "raw_data/personal_computers_per_100_people.csv",
                    col_types = cols(
@@ -320,7 +301,9 @@ pcraw1 <- read_csv(file = "raw_data/personal_computers_per_100_people.csv",
 
 pcraw <- as_tibble(pcraw1)
 
-# This dataset has all the indicators included, hence why the table has 19870 rows. Need to filter for the indicator we want, which is % of PC ownership.
+# This dataset has all the indicators included, hence why the table has 19870
+# rows. Need to filter for the indicator we want, which is % of PC ownership.
+
 pctotalraw <- read_csv(file = "raw_data/data.csv",
                        col_types = cols(
                          `Country ISO3` = col_character(),
@@ -339,6 +322,7 @@ pctotalraw <- read_csv(file = "raw_data/data.csv",
 
 
 # Percent ownership of households with PCs
+
 pcpercent <- pctotalraw %>%
   filter(`Indicator` == "Households w/ personal computer, %") %>%
   filter(`Subindicator Type` == "% households") %>%
@@ -351,21 +335,27 @@ pcpercent <- pctotalraw %>%
 
 
 # Filtered out Burkina as the World Bank data did not include Burkina
+# Should go through and make sure other problematic countries are filtered out too.
 
 newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
   filter(country != "Burkina")
 
 
 #% of people with Cellphone over 20 years
+
 cell20 <- newcell100 %>%
   rowwise() %>%
   mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
 
+# This fucntion creates a plot of China and the cell percentage as time increases
+
 countrycellpercent <- cell20 %>%
   filter(country == "China") %>%
   select( `2000`:`2019`) %>%
-  pivot_longer(names_to = "Year", values_to = "Percentage", cols = everything() ) %>%
+  pivot_longer(names_to = "Year", 
+               values_to = "Percentage", 
+               cols = everything() ) %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na() %>%
   ggplot(aes(x = Year, y = Percentage)) +
@@ -378,42 +368,60 @@ countrycellpercent <- cell20 %>%
 # Long tibble of country, year, and cellphone ownership
 
 celllong <- cell20 %>%
-  pivot_longer(names_to = "Year", values_to = "Percentage", cols = `2000`:`2019` ) %>%
+  pivot_longer(names_to = "Year", 
+               values_to = "Percentage", 
+               cols = `2000`:`2019` ) %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na(Percentage)
 
 
 
 # Graphic of change in cell ownership by year
+# Somehow I was unable to change the values to plot a geom_line graph, 
+# but it worked for geom_point()
 
 allcountriescell <-  as_tibble(celllong) %>%
-  ggplot(aes(x = Year, y = Percentage, fill = Continent,colour = Continent, na.rm = TRUE )) +
+  ggplot(aes(x = Year, 
+             y = Percentage, 
+             fill = Continent, 
+             colour = Continent)) +
   facet_wrap(~Continent, nrow = 2) +
   geom_point( alpha = 0.7)  +
   transition_time(Year) +
   labs(title = "Years: {round(frame_time,0)}") +
   shadow_wake(wake_length = 0.1, alpha = FALSE)
 
-# GDP Data
+# GDP Data cleaning
+# Takes away NaN values where there is no data on the country using na.rm = TRUE
+# I used na.rm so that, when calculating averages etc, it ignores the value
 
 GDP <- GDPraw %>%
   rename("country" = `Country Name`) %>%
   select(country, `2000`:`2019`) %>%
   rowwise() %>%
-  mutate(tenyearGDP = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
-  mutate(fiveyearGDP = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  mutate(tenyearGDP = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), 
+                           na.rm = TRUE)) %>%
+  mutate(fiveyearGDP = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), 
+                            na.rm = TRUE)) %>%
   filter(fiveyearGDP != "NaN") 
 
 GDPlonger <- GDP %>%
-  pivot_longer(names_to = "Year", values_to = "GDP", cols = `2000`:`2019`) %>%
+  pivot_longer(names_to = "Year", 
+               values_to = "GDP", 
+               cols = `2000`:`2019`) %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na(GDP)
 
-#GDP and Cellphone 
+# GDP and Cellphone 
+# Dropping blank values
 
-GDPandCell <- left_join(celllong, GDPlonger, by = c("country", "Year")) %>%
+GDPandCell <- left_join(celllong, GDPlonger, 
+                        by = c("country", "Year")) %>%
   drop_na(GDP)
+
 # Moving graph of GDP to cellphone ownership
+# This uses plotly and not ggplot
+
 GDPandCellfig <- GDPandCell %>%
   plot_ly(
     x = ~GDP, 
@@ -436,7 +444,6 @@ GDPandCellfig <- GDPandCell %>%
   )
   ) 
 
-GDPandCellfig
 
 internetlong <- newinternet %>%
   select(-fiveyearinternet, -tenyearinternet) %>%
@@ -494,7 +501,11 @@ average1 <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
 
 average <- as_tibble(average1)
 
+# Somehow was unable to plot this on the Shiny app, and while others had the
+# same problem I did on Stack Overflow, I implemnted all their suggestions in
+# the plot commented below and it did not work.
 
+# The original plots work well locally.
 
 # if fill does not exist, `size` controls line.width
 
