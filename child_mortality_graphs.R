@@ -478,7 +478,10 @@ GDPandInternetfig <- GDPandInternet %>%
   )
   ) 
 
-# Average of many things
+# Average, creating the large tibble where I can access all my information about
+# various averages. It is concerning and I need to come back and make sure no
+# information was lost with the left_joins.
+
 
 internetavg <- newinternet %>%
   select(Continent, country, fiveyearinternet, tenyearinternet)
