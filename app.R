@@ -156,29 +156,52 @@ ui <- navbarPage(
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
-             p("I've spent the year working in the student startup space at 
-               Boston and with various venture capital groups. Not only have I 
+             p("I've spent the year exploring the student entrepreneurship through 
+               Harvard Undergraduate Capital Partners, the campus VC club. Judging the 
+               Innovation Fund, I came across startups promising to bring certain services to 
+               countries around the world through personal tech. From health insurance mobile apps in the 
+               Philippines to post-secondary education mentorship in Colombia, startup founders 
+               have big visions and big claims."),
+             p("However, I wondered whether the impact of certain 
+               services would be limited due to a lack of access to certain types of personal technologies.
+               Is a health service best served investing in a mobile app or a website, or 
+               would in-person delivery strategies be more effective?
+               What does access to cell phones, personal computers, and internet look like across different countries? 
+               How does that correlate with the income per capita of a country, and does it 
+               vary across geographical regions?"),
+               
+               p("Not only have I 
                been introduced to the potential for technology to make our lives
                more convenient, I've learned that access to mobile technology 
                grown significantly in countries around the world. 
-               The phenomenon of 'leapfrogging' is studied in developmental 
-               economics, referencing countries that jump beyond certain stages 
-               of technological/economic development in an order dissimilar to 
-               many western countries. I'm interested in examining the precise 
-               rate of adoption of mobile technology and the spread of the internet 
+               In this project, I'm interested in examining the precise 
+               rate of adoption of personal technology and the spread of the internet 
                as GDP increases and time passes"),
              h3("About Me"),
-             p("My name is Alice Chen and I'm a Canadian freshman at Harvard 
+             p("My name is Alice Chen. I'm a Canadian freshman at Harvard 
                College studying Economics and CS. I'm passionate about using R to 
                study economic development, innovation & venture capital, and gender equity. 
              You can reach me at alicechen@college.harvard.edu."),
-             h4("My Repo"),
+             h3("My Repo"),
              p("https://github.com/alicechen2002/-gov1005-recitation-week-4-"),
-             h5("My Data"),
-             p("I will use GapMinder for immunization information and World Bank data for a country's income and development index.")
+             h3("My Data"),
+             p("I've complied and cleaned various sources of data for my analysis. All sources are accessible below."),
+             p(a(href = "https://data.worldbank.org/indicator/NY.GDP.PCAP.PP.CD", 
+               "GDP Per Capita, adjusted for Purchasing Power Parity. Data from the World Bank")
+             ),
+             p(a(href = "https://data.worldbank.org/indicator/IT.NET.USER.ZS", 
+                 "Percentage of Individuals using the Internet (%). Data from the World Bank."),
+               a(href = "https://www.gapminder.org/data/", "Accessed via Gapminder.")
+             ),
+             p(a(href = "https://tcdata360.worldbank.org/indicators/entrp.household.computer?country=BRA&indicator=3427&viz=bar_chart&years=2016", 
+                 "Percentage of Households with Personal Computer (%). Data from the World Bank")
+             ),
+             p(a(href = "https://data.worldbank.org/indicator/IT.CEL.SETS.P2", 
+                 "Mobile Cellular Subscriptions per 100 People. Data from the World Bank")
              )
     )
-    
+)    
+ 
 
 
 # Server takes input from the interactive website and outputs plots
