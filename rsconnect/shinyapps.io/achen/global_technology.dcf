@@ -5,8 +5,8 @@ account: achen
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4090944
-bundleId: 4566461
+bundleId: 4566798
 url: https://achen.shinyapps.io/global_technology/
-when: 1620324117.5911
+when: 1620327976.1733
 asMultiple: FALSE
 asStatic: FALSE
