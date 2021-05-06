@@ -4,8 +4,8 @@ library(tidyverse)
 library(shinythemes)
 library(gt)
 library(gtsummary)
-source(file = "child_mortality_graphs.R")
-source(file = "Model.R")
+source(file = "graph_creation.R")
+source(file = "model.R")
 
 
 ui <- navbarPage(

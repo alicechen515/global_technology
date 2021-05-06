@@ -1,0 +1,12 @@
+name: global_technology
+title: global_technology
+username:
+account: achen
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4090944
+bundleId: 4566461
+url: https://achen.shinyapps.io/global_technology/
+when: 1620324117.5911
+asMultiple: FALSE
+asStatic: FALSE

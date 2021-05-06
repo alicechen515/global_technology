@@ -16,20 +16,22 @@
 # Setup for App
 
 library(shiny)
+library(shinyWidgets)
 library(tidyverse)
 library(shinythemes)
 library(gt)
 library(gtsummary)
 library(rstanarm)
 library(broom.mixed)
-source(file = "child_mortality_graphs.R")
-source(file = "Model.R")
+source(file = "graph_creation.R")
+source(file = "model.R")
 
 
 # Define UI for application
 
 
 ui <- navbarPage(
+    
     
     # Name of the title panel displayed on the top of the webpage
     
@@ -40,11 +42,10 @@ ui <- navbarPage(
     # change in GDP and technology access across a span of 20 years.
     
     tabPanel("Technology Over Time",
-             h1("How does ownership of personal technology devices and income levels change over time?"),
+             titlePanel("How does ownership of personal technology devices and income levels change over time?"),
              p("Countries experienced strong growth in technology access over time. 
                There is also a strong correlation between GDP per capita and technology access.", 
                style = "font-size:20px;"),
-             br(),
              
              # Main Panel. Changes as input or selection from site visitors change
              
@@ -55,6 +56,10 @@ ui <- navbarPage(
                              selected = "Cell")
                  
              ),
+             br(),
+             br(),
+             br(),
+             br(),
              plotlyOutput("map")
              ),
     
@@ -78,7 +83,7 @@ ui <- navbarPage(
              p("While the World Bank uses GNI per capita, this analysis uses GDP per capita.
                Furthermore, the World Bank uses US$, converted from local currencies using
                the World Bank-specific Atlas method, whereas this representation uses
-               International Dollars. Each international dollar would buy, in the respective
+               International Dollars. Each international dollar would buy, in each respective
                country, a comparable amount of goods and services a U.S. dollar would buy in
                the United States. This is to account for Purchasing Power Parity."),
              p("As of July 1, 2020, the bounds for income classification of countries are: 
@@ -86,10 +91,10 @@ ui <- navbarPage(
                 $4046-$12535 for upper-middle income countries, and >$12535 for high-income countries. 
                All units are in International Dollars."),
              h3("Cell Phone Access"),
-             p("The table below specifies the relationship between cell phone 
-               subscription/ownership and the per capita income of a country, displayed 
-               to an accuracy of 8 significant digits."),
-             p("The model I used was a linear model with average GDP per capita over five years (2014-2019) 
+             withMathJax(),
+             p("The equation below represents the predictive model used to predict cell phone subscription of a country i."),
+             helpText('$$CellPhoneSubscription_i = \\beta_0  + \\beta_1 GDP_i+ \\epsilon_i$$'),
+             p("The predictive model I used was a linear model with average GDP per capita over five years (2014-2019) 
                as the 
                only parameter to consider. The Intercept Parameter value represents 
                the model's median estimation of the ''true value'' of the number of
@@ -98,6 +103,9 @@ ui <- navbarPage(
                Intercept Parameter value is 90.482535 subscriptions per 100 people. 
                Each dollar that per capita income rises by increases cell phone 
                subscriptions per 100 people by 0.0008.4863."),
+             p("The table specifies the relationship between cell phone 
+               subscription/ownership and the per capita income of a country, displayed 
+               to an accuracy of 8 significant digits."),
              gt_output(outputId = "table1"),
              
              # Had to resize the plots and gt tables, or it would stretch across
@@ -108,10 +116,10 @@ ui <- navbarPage(
                         height = px(400),
                         width = px(600)),
              h3("Internet Access"),
-             p("The table below specifies the relationship between internet 
-               subscription and the per capita income of a country, displayed to an accuracy of 8 significant digits.
-               "),
-             p("The model I used was a linear model with average GDP per capita over five years (2014-2019) 
+             withMathJax(),
+             p("The equation below represents the model used to predict internet access."),
+             helpText('$$Internet_i = \\beta_0  + \\beta_1 GDP_i+ \\epsilon_i$$'),
+             p("The predictive model I used was a linear model with average GDP per capita over five years (2014-2019) 
                as the 
                only parameter to consider. The Intercept Parameter value represents 
                the model's median estimation of the ''true value'' of the number of
@@ -121,6 +129,9 @@ ui <- navbarPage(
                is much lower than the Interept Parameter value for cell phone subscriptions. 
                Each dollar that per capita income rises by increases internet 
                subscriptions per 100 people by 0.00108876."),
+             p("The table below specifies the relationship between internet 
+               subscription and the per capita income of a country, displayed to an accuracy of 8 significant digits.
+               "),
              gt_output(outputId = "table2"),
              plotOutput("plot2",
                         height = px(400),
@@ -181,7 +192,7 @@ ui <- navbarPage(
              p("Similar to cell phone subscriptions, national 
                internet access generally increased over time as well. Interestingly, 
                while Bahrain experienced noticable decreases in cell phone 
-               subscriptions from 2016 to 2019, its internet access held steady and increased slightly."),
+               subscriptions from 2016 to 2019, its internet access held steady and increased slightly.")
              ),
     
     # Panel 4
@@ -212,12 +223,12 @@ ui <- navbarPage(
                rate of adoption of personal technology and the spread of the internet 
                as GDP increases and time passes"),
              h3("About Me"),
-             p("My name is Alice Chen. I'm a Canadian freshman at Harvard 
+             p("Hello there! My name is Alice Chen. I'm a Canadian freshman at Harvard 
                College studying Economics and CS. I'm passionate about using R to 
                study economic development, innovation & venture capital, and gender equity. 
-             You can reach me at alicechen@college.harvard.edu."),
-             h3("My Repo"),
-             p("https://github.com/alicechen2002/-gov1005-recitation-week-4-"),
+             You can reach me at alicechen@college.harvard.edu or via", a(href = "https://www.linkedin.com/in/alicechen515/", "Linkedin.")),
+             h3("My Repository"),
+             p("You can access the code used in this project via my Github:" , a(href = "https://github.com/alicechen2002/global_technology", "github.com/alicechen2002/global_technology")),
              h3("My Data"),
              p("I've complied and cleaned various sources of data for my analysis. All sources are accessible below."),
              p(a(href = "https://data.worldbank.org/indicator/NY.GDP.PCAP.PP.CD", 
@@ -242,17 +253,17 @@ ui <- navbarPage(
 
 server <- function(input, output) {
     
-    # Animated graph of GDP and Internet access over time
+    # Animated graph of GDP and Internet access over time. Use renderPlotly 
+    # because the plot is created by Plotly, not ggplot or ggplot2
     
     output$map <- renderPlotly( 
             if (input$plotly_type1 == "Internet") {GDPandInternetfig
             }
-                else{GDPandCellfig}
-            
+            else{GDPandCellfig}
     )
         
-
-    # Animated graph of GDP and Cell Phone access over time
+    
+    # Animated graph of GDP and Cell Phone access over time.
     
     output$map2 <- renderImage(
         if(input$plot_type2 == "a"){GDPandCellfig} 
@@ -260,45 +271,18 @@ server <- function(input, output) {
         deleteFile=TRUE
     )
     
-    # Animated graph of second GDP and Cell Phone access plot over time
+    # Plot of posterior distribution of cell phone access based on income levels.
     
-    output$map3 <- renderPlotly(
-            GDPandInternet %>%
-                plot_ly(
-                    x = ~GDP, 
-                    y = ~internet, 
-                    #size = ~pop, 
-                    color = ~Continent, 
-                    frame = ~Year, 
-                    text = ~country, 
-                    hoverinfo = "text",
-                    type = 'scatter',
-                    mode = 'markers'
-                ) %>% 
-                layout(xaxis = list(
-                    type = "log",
-                    title = "GDP (international $, PPP-adjusted)"
-                ),
-                yaxis = list(
-                    title = "Internet Use (%)"
-                )
-                ) 
-
+    output$plot1 <- renderPlot({pecellplot}
     )
     
-    # Plot of posterior distribution of cell phone access based on income levels
+    # Plot of posterior distribution of internet access based on income levels.
     
-    output$plot1 <- renderPlot({
-        pecellplot}
+    output$plot2 <- renderPlot({peinternetplot}
     )
     
-    # Plot of posterior distribution of internet access based on income levels
-    
-    output$plot2 <- renderPlot({
-        peinternetplot}
-    )
-    
-    # Plot of specific country and cell phone access
+    # Plot of specific country and cell phone access. Takes an input (forplot3)
+    # as a request to see a specific country.
     
     output$plot3 <- renderPlot({ 
         cell20 %>%
@@ -315,7 +299,7 @@ server <- function(input, output) {
              y = "Number per 100 People")
     })
     
-    # Plot of specific country and cell phone access
+    # Plot of specific country and cell phone access. Takes a value/input (forplot4).
     
     output$plot4 <- renderPlot({ 
         internet20 %>%
@@ -332,7 +316,9 @@ server <- function(input, output) {
                  y = "Number per 100 People")
     })
     
-    # Model of GDP to Cell in a Table
+    # Model of GDP to Cell in a Table. I learned not to use curly braces (used
+    # in renderPlot above, for instance) for render_gt, otherwise it does not
+    # work.
     
     output$table1 <- render_gt(
         expr = cellGDPmodeltbl,
@@ -342,7 +328,7 @@ server <- function(input, output) {
     
     
     
-    # Model of GDP to Internet in a Table
+    # Model of GDP to Internet in a Table.
     
     output$table2 <- render_gt(
         internetGDPmodeltbl,
@@ -350,18 +336,13 @@ server <- function(input, output) {
         width = px(600)
     )
     
-    #renderImage()
-    
-    # output$map2 <- if(input$plot_type2 != "a")
-    # {renderPlot({mean_child_mortality})}
-    # else {renderPlot({child_mortality_tbl})}
-    # 
 
 }
     
 
 
 # Run the application 
+
 shinyApp(ui = ui, server = server)
 
 

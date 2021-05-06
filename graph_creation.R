@@ -167,12 +167,16 @@ GDPraw1 <- read_csv(file = "raw_data/GDP_PPP.csv",
                    )
                    )
 
-# Delete the X66 column, since we don't need it.
+# Delete the X66 column, since we don't need it, and the 2020 column as most
+# countries do not have an updated value.
+
+# For some reason, this still shows as an error when I run my Shiny App, but it
+# still runs effectively.
 
 GDPraw <- as_tibble(GDPraw1) %>%
   select(-`2020`, -`X66`)
 
-# Internet data cleaning
+# Internet data cleaning. Loads csv file.
 
 internetraw <- read_csv(file = "raw_data/internet_users.csv",
                         col_types = cols(
@@ -240,7 +244,8 @@ internetraw <- read_csv(file = "raw_data/internet_users.csv",
                         )
 )
 
-# I had trouble with the data until I converted it to a tibble
+# I had trouble with the data until I converted it to a tibble. It now loads
+# much faster.
 
 internetraw <- as_tibble(internetraw)
 
@@ -263,9 +268,13 @@ clabel <- read_csv(file = "countries-continents.csv",
                      Country = col_character()
                    ))
 
+# Could have used the janitor package, but this was easy enough to rename.
 
 continentlabel <- as_tibble(clabel) %>%
   rename("country" = Country)
+
+# Adding the value of internet access to the continent labels, so I can organize
+# by continent in the future. 
 
 newinternet <- left_join(internet20, continentlabel, by = "country") 
 
@@ -302,6 +311,8 @@ pcraw1 <- read_csv(file = "raw_data/personal_computers_per_100_people.csv",
                    )
 )
 
+# Again, defining as tibble for faster deployments.
+
 pcraw <- as_tibble(pcraw1)
 
 # This dataset has all the indicators included, hence why the table has 19870
@@ -324,7 +335,8 @@ pctotalraw <- read_csv(file = "raw_data/data.csv",
 
 
 
-# Percent ownership of households with PCs
+# Percent ownership of households with PCs.
+# As mentioned above, I filtered for % of households.
 
 pcpercent <- pctotalraw %>%
   filter(`Indicator` == "Households w/ personal computer, %") %>%
@@ -344,30 +356,13 @@ newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
   filter(country != "Burkina") %>%
   arrange(country)
 
-#% of people with Cellphone over 20 years
+# % of people with Cellphone over 20 years
 
 cell20 <- newcell100 %>%
   rowwise() %>%
   mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
   arrange(country)
-
-# This function creates a plot of China and the cell percentage as time increases
-
-countrycellpercent <- cell20 %>%
-  filter(country == "China") %>%
-  select( `2000`:`2019`) %>%
-  pivot_longer(names_to = "Year", 
-               values_to = "Percentage", 
-               cols = everything() ) %>%
-  mutate(Year = as.numeric(Year)) %>%
-  drop_na() %>%
-  ggplot(aes(x = Year, y = Percentage)) +
-  geom_point( alpha = 0.7) +
-  theme_bw() 
-
-
- 
 
 # Long tibble of country, year, and cellphone ownership
 
@@ -382,7 +377,7 @@ celllong <- cell20 %>%
 
 # Graphic of change in cell ownership by year
 # Somehow I was unable to change the values to plot a geom_line graph, 
-# but it worked for geom_point()
+# but it worked for geom_point(). 
 
 allcountriescell <-  as_tibble(celllong) %>%
   ggplot(aes(x = Year, 
@@ -416,15 +411,14 @@ GDPlonger <- GDP %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na(GDP)
 
-# GDP and Cellphone 
-# Dropping blank values
+# GDP and Cellphone values put together. This drops blank values.
 
 GDPandCell <- left_join(celllong, GDPlonger, 
                         by = c("country", "Year")) %>%
   drop_na(GDP)
 
-# Moving graph of GDP to cellphone ownership
-# This uses plotly and not ggplot
+# Moving graph of GDP to cellphone ownership. This uses plotly and not ggplot,
+# so be careful with outputs.
 
 GDPandCellfig <- GDPandCell %>%
   plot_ly(
@@ -440,7 +434,6 @@ GDPandCellfig <- GDPandCell %>%
   ) %>% 
   layout(title = "GDP to Cell Phone Access per 100 people, 2000-2019",
          xaxis = list(
-    type = "log",
     title = "GDP (international $, PPP-adjusted)"
   ),
   yaxis = list(
@@ -448,6 +441,8 @@ GDPandCellfig <- GDPandCell %>%
   )
   ) 
 
+# This is the long internet data tibble, with countries names included in a
+# column for easy plotting.
 
 internetlong <- newinternet %>%
   select(-fiveyearinternet, -tenyearinternet) %>%
@@ -455,7 +450,8 @@ internetlong <- newinternet %>%
   mutate(Year = as.numeric(Year)) %>%
   drop_na(internet)
 
-# Moving graph of GDP and internet usership
+# Moving graph of GDP and internet users and ownership. Again, this takes a long
+# tibble and plots it into plotly.
 
 GDPandInternet <- left_join(internetlong, GDPlonger, by = c("country", "Year")) %>%
   drop_na()
@@ -474,7 +470,6 @@ GDPandInternetfig <- GDPandInternet %>%
   ) %>% 
   layout(title = "GDP to Internet Access per 100 people, 2000-2019",
          xaxis = list(
-    type = "log",
     title = "GDP (international $, PPP-adjusted)"
   ),
   yaxis = list(
@@ -482,10 +477,14 @@ GDPandInternetfig <- GDPandInternet %>%
   )
   ) 
 
+
 # Average, creating the large tibble where I can access all my information about
 # various averages. It is concerning and I need to come back and make sure no
 # information was lost with the left_joins.
 
+# I dropped all information besides the most pertinent values, including five
+# year and ten year averages of each type of ownership, using the select
+# function, Then I joined all the individual tibbles together.
 
 internetavg <- newinternet %>%
   select(Continent, country, fiveyearinternet, tenyearinternet)
@@ -509,102 +508,74 @@ average1 <- left_join(cellavg, internetavg, by = c("country", "Continent")) %>%
 average <- as_tibble(average1)
 
 # Somehow was unable to plot this on the Shiny app, and while others had the
-# same problem I did on Stack Overflow, I implemnted all their suggestions in
+# same problem I did on Stack Overflow, I implemented all their suggestions in
 # the plot commented below and it did not work.
 
 # The original plots work well locally.
 
-# if fill does not exist, `size` controls line.width
-
-#average <- average[order(average$fiveyearGDP),]
-
-# internetcellplot5a <- average %>% 
+# internetcellplot5 <- average %>%
 #   drop_na() %>%
 #   plot_ly(
-#   x = ~fiveyearinternet, 
-#   y = ~fiveyearcell, 
-#   span = ~fiveyearGDP ,
-#   color = ~Continent, 
-#   #frame = ~Year, 
-#   text = ~country, 
+#   x = ~fiveyearinternet,
+#   y = ~fiveyearcell,
+#   size = ~fiveyearGDP*100,
+#   color = ~Continent,
+#   #frame = ~Year,
+#   text = ~country,
 #   hoverinfo = "text",
 #   type = 'scatter',
-#   mode = 'markers',
-#   marker = list(size = ~fiveyearGDP),
-#   fill = ~""
-# ) %>% 
+#   mode = 'markers'
+# ) %>%
 #   layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
-#          xaxis = list(showgrid = TRUE, 
+#          xaxis = list(showgrid = TRUE,
 #                       title = "Internet Access (%)",
 #                       yaxis = list(showgrid = TRUE,
 #                                    title = "Cellphone Ownership (%)"
 #                       )
-#          )) 
-# internetcellplot5a
-
-internetcellplot5 <- average %>% 
-  drop_na() %>%
-  plot_ly(
-  x = ~fiveyearinternet, 
-  y = ~fiveyearcell, 
-  size = ~fiveyearGDP*100, 
-  color = ~Continent, 
-  #frame = ~Year, 
-  text = ~country, 
-  hoverinfo = "text",
-  type = 'scatter',
-  mode = 'markers'
-) %>% 
-  layout(title = "Average Internet Access and Cellphone Ownership, 2015-2019",
-         xaxis = list(showgrid = TRUE, 
-                      title = "Internet Access (%)",
-                      yaxis = list(showgrid = TRUE,
-                                   title = "Cellphone Ownership (%)"
-                      )
-         )) 
-
-internetcellplot10 <- average %>% plot_ly(
-  x = ~tenyearinternet, 
-  y = ~tenyearcell, 
-  span = ~tenyearGDP, 
-  color = ~Continent, 
-  #frame = ~Year, 
-  text = ~country, 
-  hoverinfo = "text",
-  type = 'scatter',
-  mode = 'markers',
-  marker = list(sizemode = 'diameter'),
-  fill = ~""
-) %>% 
-  layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
-         xaxis = list(showgrid = TRUE, 
-                      title = "Internet Access (%)"),
-         yaxis = list(showgrid = TRUE,
-                      title = "Cellphone Ownership (%)",
-                      range = c(0, 200))
-  )
-
-
-
-
-pccell5 <- average %>% plot_ly(
-  x = ~fiveyearpc, 
-  y = ~fiveyearcell, 
-  size = ~tenyearGDP, 
-  color = ~Continent, 
-  #frame = ~Year, 
-  text = ~country, 
-  hoverinfo = "text",
-  type = 'scatter',
-  mode = 'markers',
-  fill = ""
-) %>% 
-  layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
-         xaxis = list(showgrid = TRUE, 
-                      title = "Internet Access (%)"),
-         yaxis = list(showgrid = TRUE,
-                      title = "PC Ownership (%)",
-                      range = c(0, 200))
-  )
-
-
+#          ))
+# 
+# internetcellplot10 <- average %>% plot_ly(
+#   x = ~tenyearinternet,
+#   y = ~tenyearcell,
+#   span = ~tenyearGDP,
+#   color = ~Continent,
+#   #frame = ~Year,
+#   text = ~country,
+#   hoverinfo = "text",
+#   type = 'scatter',
+#   mode = 'markers',
+#   marker = list(sizemode = 'diameter'),
+#   fill = ~""
+# ) %>%
+#   layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
+#          xaxis = list(showgrid = TRUE,
+#                       title = "Internet Access (%)"),
+#          yaxis = list(showgrid = TRUE,
+#                       title = "Cellphone Ownership (%)",
+#                       range = c(0, 200))
+#   )
+# 
+# 
+# 
+# 
+# pccell5 <- average %>% plot_ly(
+#   x = ~fiveyearpc,
+#   y = ~fiveyearcell,
+#   size = ~tenyearGDP,
+#   color = ~Continent,
+#   #frame = ~Year,
+#   text = ~country,
+#   hoverinfo = "text",
+#   type = 'scatter',
+#   mode = 'markers',
+#   fill = ""
+# ) %>%
+#   layout(title = "Average Internet Access and Cellphone Ownership, 2009-2019",
+#          xaxis = list(showgrid = TRUE,
+#                       title = "Internet Access (%)"),
+#          yaxis = list(showgrid = TRUE,
+#                       title = "PC Ownership (%)",
+#                       range = c(0, 200))
+#   )
+# 
+# 

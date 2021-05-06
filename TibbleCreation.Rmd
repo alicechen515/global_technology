@@ -21,8 +21,8 @@ library(ggplot2)
 library(sf)
 library(maps)
 
-source(file = "child_mortality_graphs.R")
-source(file = "Model.R")
+source(file = "graph_creation.R")
+source(file = "model.R")
 ```
 
 ```{r, include = FALSE}

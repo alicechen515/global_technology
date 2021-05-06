@@ -14,7 +14,7 @@ library(gt)
 library(gtsummary)
 library(ggdist)
 
-source(file = "child_mortality_graphs.R")
+source(file = "graph_creation.R")
 
 
 # While the World Bank uses GNI per capita, this analysis uses GDP per capita.
