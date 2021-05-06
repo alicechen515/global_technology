@@ -91,7 +91,7 @@ cellGDPmodeltbl <- tbl_regression(cellGDPmodel,
 
 newobscell <- tibble(fiveyearGDP = 
                        c(lowincome, lowmidincome, uppermidincome, highincome),
-                     names = c("Low Income", "Low-Middle Income", "Upper Middle Income", "High Income")
+                     names = c("Low Income", "Lower Middle Income", "Upper Middle Income", "High Income")
                      )
 
 pecell <- posterior_epred(cellGDPmodel,
@@ -108,6 +108,8 @@ pecelllong <- pecell %>%
                values_to = "Cell Phone Ownership")
 
 pecellplot <- pecelllong %>%
+  mutate(`Income Classification` = fct_relevel(factor(`Income Classification`), 
+                     c("Low Income", "Lower Middle Income", "Upper Middle Income", "High Income")) ) %>%
   ggplot(aes(x = `Cell Phone Ownership`, 
              y = `Income Classification`)) +
   stat_slab(alpha = 0.3) +
@@ -157,7 +159,14 @@ peinternetlong <- peinternet %>%
                names_to = "Income Classification", 
                values_to = "Internet Subscription")
 
+# It was challenging to arrange the y-axis values in the order I wanted,
+# starting with low income and ascending to high income. I realized that I
+# needed to use fct_relevel instead of fct_reorder, and it should not have been
+# in the ggplot() aesthetic argument.
+
 peinternetplot <- peinternetlong %>%
+  mutate(`Income Classification` = fct_relevel(factor(`Income Classification`), 
+                                               c("Low Income", "Lower Middle Income", "Upper Middle Income", "High Income")) ) %>%
   ggplot(aes(x = `Internet Subscription`, 
              y = `Income Classification`)) +
   stat_slab(alpha = 0.3) +
@@ -189,6 +198,4 @@ newobscontinentCell <- tibble(fiveyearGDP =
                            c(lowincome, lowmidincome, uppermidincome, highincome),
                          names = c("Low Income", "Low-Middle Income", "Upper Middle Income", "High Income")
 )
-
-
 

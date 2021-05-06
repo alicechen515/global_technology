@@ -70,11 +70,11 @@ ui <- navbarPage(
     tabPanel("Model",
              titlePanel("Predictive Models of Personal Technology Device Access
                         Based On Country's Income Level"),
-             h6("Based on data from the World Bank and the United 
+             p("Based on data from the World Bank and the United 
                Nations, the posterior distribution of a country's personal 
                technology access demonstrates that income levels still have a 
                significant correlation with technology adoption."),
-             br(),
+             h3("Background"),
              p("While the World Bank uses GNI per capita, this analysis uses GDP per capita.
                Furthermore, the World Bank uses US$, converted from local currencies using
                the World Bank-specific Atlas method, whereas this representation uses
@@ -83,10 +83,19 @@ ui <- navbarPage(
                the United States. This is to account for Purchasing Power Parity."),
              p("As of July 1, 2020, the bounds for income classification of countries are: 
                <$1036 for low-income countries,  $1036-$4045 for lower-middle income countries,
-                $4046-$12535 for upper-middle income countrues, and >$12535 for high-income countries. 
+                $4046-$12535 for upper-middle income countries, and >$12535 for high-income countries. 
                All units are in International Dollars."),
+             h3("Cell Phone Access"),
              p("The table below specifies the relationship between cell phone 
-               subscription/ownership and the per capita income of a country.
+               subscription/ownership and the per capita income of a country, displayed 
+               to an accuracy of 8 significant digits."),
+             p("The model I used was a linear model with average GDP per capita over five years (2014-2019) 
+               as the 
+               only parameter to consider. The Intercept Parameter value represents 
+               the model's median estimation of the ''true value'' of the number of
+               cell phone subscriptions for a country
+               with hypothetical GDP per capita of 0 international dollars. The 
+               Intercept Parameter value is 90.482535 subscriptions per 100 people. 
                Each dollar that per capita income rises by increases cell phone 
                subscriptions per 100 people by 0.0008.4863."),
              gt_output(outputId = "table1"),
@@ -98,8 +107,18 @@ ui <- navbarPage(
              plotOutput("plot1",
                         height = px(400),
                         width = px(600)),
+             h3("Internet Access"),
              p("The table below specifies the relationship between internet 
-               subscription and the per capita income of a country.
+               subscription and the per capita income of a country, displayed to an accuracy of 8 significant digits.
+               "),
+             p("The model I used was a linear model with average GDP per capita over five years (2014-2019) 
+               as the 
+               only parameter to consider. The Intercept Parameter value represents 
+               the model's median estimation of the ''true value'' of the number of
+               internet subscriptions for a country
+               with hypothetical GDP per capita of 0 international dollars. The 
+               Intercept Parameter value is 90.482535 subscriptions per 100 people, which 
+               is much lower than the Interept Parameter value for cell phone subscriptions. 
                Each dollar that per capita income rises by increases internet 
                subscriptions per 100 people by 0.00108876."),
              gt_output(outputId = "table2"),
@@ -122,7 +141,7 @@ ui <- navbarPage(
                         over time for each country?"),
              p("Most countries see clear growth in both cell phone and 
                internet access from 2000 to 2019."),
-             h6("Cell Phone Access by Country"),
+             h3("Cell Phone Access by Country"),
              mainPanel(
                  selectInput(inputId = "forplot3",
                              label = "Choose a Country",
@@ -137,7 +156,14 @@ ui <- navbarPage(
              br(),
              br(),
              br(),
-             h6("Internet Access by Country"),
+             p("Looking at countries individually, most experience significant 
+               increases in national cell phone subscriptions over time. However, 
+               some exceptions remain. Bahrain, for instance, experienced what 
+               the Human Rights Watch called a ''",
+               a(href = "https://www.hrw.org/world-report/2017/country-chapters/bahrain#", "marked deterioration in the 
+               human rights situation"), "''in 2016 as government authorities cracked 
+               down on opposition groups and activists."),
+             h3("Internet Access by Country"),
              mainPanel(
                  selectInput(inputId = "forplot4",
                              label = "Choose a Country",
@@ -147,7 +173,15 @@ ui <- navbarPage(
              ),
              plotOutput("plot4",
                         height = px(400),
-                        width = px(600))
+                        width = px(600)),
+             br(),
+             br(),
+             br(),
+             br(),
+             p("Similar to cell phone subscriptions, national 
+               internet access generally increased over time as well. Interestingly, 
+               while Bahrain experienced noticable decreases in cell phone 
+               subscriptions from 2016 to 2019, its internet access held steady and increased slightly."),
              ),
     
     # Panel 4

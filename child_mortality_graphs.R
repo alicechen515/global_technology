@@ -250,7 +250,10 @@ internet20 <- internetraw %>%
   select(country, `2000`:`2019`) %>%
   rowwise() %>%
   mutate(tenyearinternet = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
-  mutate(fiveyearinternet = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+  mutate(fiveyearinternet = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  arrange(country)
+
+
 
 # Countries & Continents labels data cleaning
 
@@ -338,17 +341,18 @@ pcpercent <- pctotalraw %>%
 # Should go through and make sure other problematic countries are filtered out too.
 
 newcell100 <- left_join(continentlabel, cell100, by = "country") %>%
-  filter(country != "Burkina")
-
+  filter(country != "Burkina") %>%
+  arrange(country)
 
 #% of people with Cellphone over 20 years
 
 cell20 <- newcell100 %>%
   rowwise() %>%
   mutate(tenyearcell = mean(c(`2009`, `2010`, `2011`, `2012`, `2013`, `2014`, `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
-  mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE))
+  mutate(fiveyearcell = mean(c( `2015`, `2016`, `2017`, `2018`, `2019`), na.rm = TRUE)) %>%
+  arrange(country)
 
-# This fucntion creates a plot of China and the cell percentage as time increases
+# This function creates a plot of China and the cell percentage as time increases
 
 countrycellpercent <- cell20 %>%
   filter(country == "China") %>%
