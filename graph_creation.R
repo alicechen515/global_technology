@@ -17,7 +17,7 @@ library(transformr)
 # Data cleaning for cellphone data
 # Set the column types based on output from spec() function
 
-cellphones_100 <- read_csv(file = "cell_phones_per_100_people.csv",
+cellphones_100 <- read_csv(file = "raw_data/cell_phones_per_100_people.csv",
                            col_types = cols(
                              country = col_character(),
                              `1960` = col_double(),
@@ -262,7 +262,7 @@ internet20 <- internetraw %>%
 
 # Countries & Continents labels data cleaning
 
-clabel <- read_csv(file = "countries-continents.csv",
+clabel <- read_csv(file = "raw_data/countries-continents.csv",
                    col_types = cols(
                      Continent = col_character(),
                      Country = col_character()

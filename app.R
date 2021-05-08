@@ -32,6 +32,7 @@ source(file = "model.R")
 
 ui <- navbarPage(
     
+    theme = shinytheme("flatly"),
     
     # Name of the title panel displayed on the top of the webpage
     
@@ -42,6 +43,7 @@ ui <- navbarPage(
     # change in GDP and technology access across a span of 20 years.
     
     tabPanel("Technology Over Time",
+             
              titlePanel("How does ownership of personal technology devices and income levels change over time?"),
              p("Countries experienced strong growth in technology access over time. 
                There is also a strong correlation between GDP per capita and technology access.", 
@@ -49,18 +51,15 @@ ui <- navbarPage(
              
              # Main Panel. Changes as input or selection from site visitors change
              
-             mainPanel(
+            sidebarPanel(
                  selectInput(inputId = "plotly_type1",
                              label = "Choose a type of technology",
                              choices = c("Cell", "Internet"),
                              selected = "Cell")
                  
              ),
-             br(),
-             br(),
-             br(),
-             br(),
-             plotlyOutput("map")
+             mainPanel(plotlyOutput("map")
+             )
              ),
     
     # Panel 2 This is a predictive model I created using stan_glm() that
@@ -73,23 +72,26 @@ ui <- navbarPage(
     # Each table is followed by a plit, that plots the median value for each income bracket.
     
     tabPanel("Model",
+             mainPanel(
              titlePanel("Predictive Models of Personal Technology Device Access
                         Based On Country's Income Level"),
              p("Based on data from the World Bank and the United 
                Nations, the posterior distribution of a country's personal 
                technology access demonstrates that income levels still have a 
                significant correlation with technology adoption."),
+             br(),
              h3("Background"),
              p("While the World Bank uses GNI per capita, this analysis uses GDP per capita.
                Furthermore, the World Bank uses US$, converted from local currencies using
                the World Bank-specific Atlas method, whereas this representation uses
-               International Dollars. Each international dollar would buy, in each respective
+               International Dollars (ID). Each international dollar would buy, in each respective
                country, a comparable amount of goods and services a U.S. dollar would buy in
                the United States. This is to account for Purchasing Power Parity."),
              p("As of July 1, 2020, the bounds for income classification of countries are: 
-               <$1036 for low-income countries,  $1036-$4045 for lower-middle income countries,
-                $4046-$12535 for upper-middle income countries, and >$12535 for high-income countries. 
+               < 1036 ID for low-income countries,  1036-4045 ID for lower-middle income countries,
+                4046-12535 ID for upper-middle income countries, and >12535 ID for high-income countries. 
                All units are in International Dollars."),
+             br(),
              h3("Cell Phone Access"),
              withMathJax(),
              p("The equation below represents the predictive model used to predict cell phone subscription of a country i."),
@@ -106,15 +108,17 @@ ui <- navbarPage(
              p("The table specifies the relationship between cell phone 
                subscription/ownership and the per capita income of a country, displayed 
                to an accuracy of 8 significant digits."),
-             gt_output(outputId = "table1"),
+             splitLayout(
+                 cellWidths = c("60%", "40%"),
+                 plotOutput("plot1"),
+             gt_output(outputId = "table1")),
              
              # Had to resize the plots and gt tables, or it would stretch across
              # the entire page, making values/changes in y-axis very hard to
              # see. Settled on a long rectangle shape
              
-             plotOutput("plot1",
-                        height = px(400),
-                        width = px(600)),
+            # height = px(400),
+            # width = px(600)
              h3("Internet Access"),
              withMathJax(),
              p("The equation below represents the model used to predict internet access."),
@@ -132,11 +136,12 @@ ui <- navbarPage(
              p("The table below specifies the relationship between internet 
                subscription and the per capita income of a country, displayed to an accuracy of 8 significant digits.
                "),
-             gt_output(outputId = "table2"),
-             plotOutput("plot2",
-                        height = px(400),
-                        width = px(600))
-             ),
+            splitLayout(
+                cellWidths = c("60%", "40%"),
+                plotOutput("plot2"),
+                gt_output(outputId = "table2"))
+      
+             )),
     
     # Panel 3
     # This panel looks simple, but it is because I was unable to print a
@@ -150,6 +155,7 @@ ui <- navbarPage(
     tabPanel("National Technology Access Over Time",
              titlePanel("How does access to internet and cell phones change 
                         over time for each country?"),
+             mainPanel(
              p("Most countries see clear growth in both cell phone and 
                internet access from 2000 to 2019."),
              h3("Cell Phone Access by Country"),
@@ -193,13 +199,14 @@ ui <- navbarPage(
                internet access generally increased over time as well. Interestingly, 
                while Bahrain experienced noticable decreases in cell phone 
                subscriptions from 2016 to 2019, its internet access held steady and increased slightly.")
-             ),
+             )),
     
     # Panel 4
     # Discussion panel about my general work on this project.
     
     tabPanel("About", 
              titlePanel("About"),
+             mainPanel(
              h3("Project Background and Motivations"),
              p("I've spent the year exploring the student entrepreneurship through 
                Harvard Undergraduate Capital Partners, the campus VC club. Judging the 
@@ -243,6 +250,7 @@ ui <- navbarPage(
              ),
              p(a(href = "https://data.worldbank.org/indicator/IT.CEL.SETS.P2", 
                  "Mobile Cellular Subscriptions per 100 People. Data from the World Bank")
+             )
              )
     )
 )    
